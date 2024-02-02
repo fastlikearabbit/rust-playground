@@ -14,7 +14,7 @@ impl<T: Clone + Default> Grid<T> {
         Self {
             rows,
             cols,
-            grid: Vec::with_capacity(rows * cols),
+            grid: vec![Default::default(); rows * cols],
         }
     }
 
@@ -24,7 +24,6 @@ impl<T: Clone + Default> Grid<T> {
             cols,
             grid: Vec::from(grid),
         }
-
     }
 
     pub fn size(&self) -> (usize, usize) {
@@ -42,18 +41,14 @@ impl<T: Clone + Default> Grid<T> {
     pub fn neighbours(&self, row: usize, col: usize) -> Vec<(usize, usize)> {
         let mut neighbours = Vec::new();
 
-        for i in row.saturating_sub(1)..=(row + 1).saturating_sub(self.rows - 1) {
-            for j in col.saturating_sub(1)..=(col + 1).saturating_sub(self.cols - 1) {
+        for i in row.saturating_sub(1)..=(row + 1).min(self.rows - 1) {
+            for j in col.saturating_sub(1)..=(col + 1).min(self.cols - 1) {
                if i != row || j != col {
                     neighbours.push((i, j));
                }
             }
         }
         neighbours
-    }
-
-    fn in_bounds(&self, row: usize, col: usize) -> bool {
-        row >= 0 && row < self.rows && col >= 0 && col < self.cols   
     }
 }
 
@@ -80,17 +75,44 @@ pub struct GameOfLife {
 
 impl GameOfLife {
     pub fn from_grid(grid: Grid<Cell>) -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        Self {
+            grid
+        }
     }
 
     pub fn get_grid(&self) -> &Grid<Cell> {
-        // TODO: your code goes here.
-        unimplemented!()
+        &self.grid
     }
 
     pub fn step(&mut self) {
-        // TODO: your code goes here.
-        unimplemented!()
+        let (rows, cols) = self.grid.size();
+        let mut new_grid = Grid::new(rows, cols);
+
+        for i in 0..rows {
+            for j in 0..cols {
+                let alive_neighbours_count = self.get_alive_neighbours_count(i, j);
+                match self.grid.get(i, j) {
+                    Cell::Alive => match alive_neighbours_count {
+                        0 | 1  => new_grid.set(Cell::Dead, i, j),
+                        2 | 3  => new_grid.set(Cell::Alive, i, j),
+                        _      => new_grid.set(Cell::Dead, i, j),
+                    },
+                    Cell::Dead => if alive_neighbours_count == 3 {
+                        new_grid.set(Cell::Alive, i, j);
+                    }
+                }
+            }
+        }
+        self.grid = new_grid;
+    }
+
+    fn get_alive_neighbours_count(&self, row: usize, col: usize) -> usize {
+        let mut count = 0;
+        for (i, j) in self.grid.neighbours(row, col) {
+            if let Cell::Alive = self.grid.get(i, j) {
+                count += 1;
+            }
+        }
+        count
     }
 }
