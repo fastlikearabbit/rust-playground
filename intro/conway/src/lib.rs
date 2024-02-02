@@ -11,33 +11,49 @@ pub struct Grid<T> {
 
 impl<T: Clone + Default> Grid<T> {
     pub fn new(rows: usize, cols: usize) -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        Self {
+            rows,
+            cols,
+            grid: Vec::with_capacity(rows * cols),
+        }
     }
 
     pub fn from_slice(grid: &[T], rows: usize, cols: usize) -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        Self {
+            rows,
+            cols,
+            grid: Vec::from(grid),
+        }
+
     }
 
     pub fn size(&self) -> (usize, usize) {
-        // TODO: your code goes here.
-        unimplemented!()
+        (self.rows, self.cols)
     }
 
     pub fn get(&self, row: usize, col: usize) -> &T {
-        // TODO: your code goes here.
-        unimplemented!()
+        &self.grid[row * self.cols + col]
     }
 
     pub fn set(&mut self, value: T, row: usize, col: usize) {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.grid[row * self.cols + col] = value;
     }
 
     pub fn neighbours(&self, row: usize, col: usize) -> Vec<(usize, usize)> {
-        // TODO: your code goes here.
-        unimplemented!()
+        let mut neighbours = Vec::new();
+
+        for i in row.saturating_sub(1)..=(row + 1).saturating_sub(self.rows - 1) {
+            for j in col.saturating_sub(1)..=(col + 1).saturating_sub(self.cols - 1) {
+               if i != row || j != col {
+                    neighbours.push((i, j));
+               }
+            }
+        }
+        neighbours
+    }
+
+    fn in_bounds(&self, row: usize, col: usize) -> bool {
+        row >= 0 && row < self.rows && col >= 0 && col < self.cols   
     }
 }
 
