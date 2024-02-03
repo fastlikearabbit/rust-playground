@@ -18,7 +18,16 @@ impl<K: Ord, V> Node<K, V> {
                 left_child,
                 right_child,
             }
+    }
+    pub fn leaf(key: K, value: V) -> Self {
+        Self {
+            key,
+            value,
+            height: 0,
+            left_child: None,
+            right_child: None,
         }
+    }
     pub fn height(&self) -> usize {
         self.height
     }
