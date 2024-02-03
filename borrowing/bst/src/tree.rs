@@ -2,7 +2,8 @@
 use crate::node::Node;
 
 pub struct AVLTreeMap<K, V> {
-    // TODO: your code goes here.
+    root: Option<Node<K, V>>,
+    len : usize,
 }
 
 impl<K: Ord, V> Default for AVLTreeMap<K, V> {
@@ -13,18 +14,34 @@ impl<K: Ord, V> Default for AVLTreeMap<K, V> {
 
 impl<K: Ord, V> AVLTreeMap<K, V> {
     pub fn new() -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        Self {
+            root: None,
+            len : 0,
+        }
     }
 
     pub fn len(&self) -> usize {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.len
     }
 
     pub fn is_empty(&self) -> bool {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.root.is_none()
+    }
+
+    fn rotate_left(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
+        todo!("Implement rotate_left");
+    }
+
+    fn rotate_right(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
+        todo!("Implement rotate_right");
+    }
+
+    fn rebalance_left(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
+        todo!("Implement rebalance_left");
+    }
+
+    fn rebalance_right(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
+        todo!("Implement rebalance");
     }
 
     // fn get(&self, key: ...) -> Option<&V>
