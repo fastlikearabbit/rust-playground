@@ -1,4 +1,7 @@
 #![forbid(unsafe_code)]
+use std::borrow::Borrow;
+use std::hash::Hash;
+
 use crate::node::Node;
 
 pub struct AVLTreeMap<K, V> {
@@ -44,11 +47,46 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         todo!("Implement rebalance");
     }
 
-    // fn get(&self, key: ...) -> Option<&V>
-    // fn get_key_value(&self, key: ...) -> Option<&V>
-    // fn contains_key(&self, key: ...) -> bool
-    // fn insert(&mut self, key: K, value: V) -> Option<V>
-    // fn nth_key_value(&self, k: usize) -> Option<(&K, &V)>
-    // fn remove(&mut self, key: ...) -> Option<V>
-    // fn remove_entry(&mut self, key: ...) -> Option<(K, V)>
+    pub fn get<Q>(&self, key: &Q) -> Option<&V>
+    where
+        K: Borrow<Q>,
+        Q: ?Sized, {
+        todo!();
+    }
+    
+    pub fn get_key_value<Q>(&self, key: &Q) -> Option<(&K, &V)>
+    where
+        K: Borrow<Q>,
+        Q: ?Sized,  {
+        todo!();
+    }
+    
+    pub fn contains_key<Q>(&self, key: &Q) -> bool
+    where
+        K: Borrow<Q>,
+        Q: ?Sized {
+        todo!();
+    }
+
+    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
+        todo!();
+    }
+    
+    pub fn nth_key_value(&self, k: usize) -> Option<(&K, &V)> {
+        todo!();
+    }
+
+    pub fn remove<Q>(&mut self, key: &Q) -> Option<V> 
+    where
+        K: Borrow<Q>,
+        Q: ?Sized, {
+        todo!();
+    }
+    
+    pub fn remove_entry<Q>(&mut self, key: &Q) -> Option<(K, V)>
+    where
+        K: Borrow<Q>,
+        Q: ?Sized, {
+        todo!();
+    }
 }
