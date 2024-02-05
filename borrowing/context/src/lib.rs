@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 use std::collections::HashMap;
-use std::any::Any;
+use std::any::{type_name, Any};
 
 pub struct Context {
     data: HashMap<String, Box<dyn Any>>,
@@ -29,9 +29,9 @@ impl Context {
     }
 
     pub fn insert_singletone<T: Any>(&mut self, obj: T) {
-        todo!();
+        self.insert(type_name::<T>(), obj);
     }
-    pub fn get_singletone<T: Any>(&self) -> &T {
-        todo!();
+    pub fn get_singletone<T: 'static + Any>(&self) -> &T {
+        self.get::<T>(type_name::<T>())
     }
 }
