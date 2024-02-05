@@ -1,17 +1,30 @@
 #![forbid(unsafe_code)]
 
+use std::collections::HashMap;
+use std::any::Any;
+
 pub struct Context {
-    // TODO: your code goes here.
+    collection: HashMap<String, Box<dyn Any>>,
 }
 
 impl Context {
     pub fn new() -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        Self {
+            collection: HashMap::new(),
+        }
     }
 
-    // fn insert(&mut self, key: ..., obj: ...);
-    // fn get(&self, key: ...);
-    // fn insert_singletone(&mut self, obj: ...);
-    // fn get_singletone(&self);
+    pub fn insert<T: Any>(&mut self, key: impl AsRef<str>, obj: T) {
+        todo!();
+    }
+    pub fn get<T>(&self, key: impl AsRef<str>) -> &T {
+        todo!();
+    }
+
+    pub fn insert_singletone<T: Any>(&mut self, obj: T) {
+        todo!();
+    }
+    pub fn get_singletone<T>(&self) -> &T {
+        todo!();
+    }
 }
