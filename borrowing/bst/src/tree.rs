@@ -1,12 +1,10 @@
 #![forbid(unsafe_code)]
 use std::borrow::Borrow;
-use std::hash::Hash;
-
 use crate::node::Node;
 
 pub struct AVLTreeMap<K, V> {
     root: Option<Node<K, V>>,
-    len : usize,
+    height : usize,
 }
 
 impl<K: Ord, V> Default for AVLTreeMap<K, V> {
@@ -18,29 +16,83 @@ impl<K: Ord, V> Default for AVLTreeMap<K, V> {
 impl<K: Ord, V> AVLTreeMap<K, V> {
     pub fn new() -> Self {
         Self {
-            root: None,
-            len : 0,
+            root   : None,
+            height : 0,
         }
     }
 
     pub fn len(&self) -> usize {
-        self.len
+        self.height
     }
 
     pub fn is_empty(&self) -> bool {
         self.root.is_none()
     }
 
-    fn rotate_left(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
-        todo!("Implement rotate_left");
+    fn height(root: &Option<Box<Node<K, V>>>) -> usize {
+        if let Some(r) = root {
+            r.height
+        } else {
+            0
+        }
+    }
+
+    fn fix_height(mut root: Option<&mut Box<Node<K, V>>>) {
+        let mut root = root.as_mut().unwrap();
+        let left_height  = Self::height(&root.left_child);
+        let right_height = Self::height(&root.right_child);
+        root.height = if left_height > right_height { left_height + 1} else { right_height + 1};
+    }
+    /// assumes root has right child
+    fn rotate_left(mut root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
+        let mut root = root.unwrap();
+        
+        // takes ownership of root's right child
+        let mut right_of_root = root.right_child.take().unwrap();
+        
+        // root takes ownership of right_of_root's left child
+        root.right_child = right_of_root.left_child.take();
+
+        Self::fix_height(Some(&mut root));
+
+        // right_of_root's left child takes ownership of root
+        right_of_root.left_child = Some(root);
+
+        Self::fix_height(Some(&mut right_of_root));
+        
+        Some(right_of_root)
     }
 
     fn rotate_right(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
-        todo!("Implement rotate_right");
+        let mut root = root.unwrap();
+        
+        // takes ownership of root's left child
+        let mut left_of_root = root.left_child.take().unwrap();
+        
+        // root takes ownership of left_of_root's right child
+        root.left_child = left_of_root.right_child.take();
+
+        Self::fix_height(Some(&mut root));
+
+        // right_of_root's right child takes ownership of root
+        left_of_root.right_child = Some(root);
+
+        Self::fix_height(Some(&mut left_of_root));
+   
+        Some(left_of_root)
     }
 
-    fn rebalance_left(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
-        todo!("Implement rebalance_left");
+    fn rebalance_left(mut root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
+        // let root = root.unwrap();
+        // if Self::height(&root.right_child)
+        //     - Self::height(&root.left_child) == 2 {
+        //     root = Self::rotate_left(Some(root));
+        // } else {
+        //     root.right_child = Self::rotate_right(root.unwrap().right_child);
+        //     root = Self::rotate_left(root);
+        // }
+
+        None
     }
 
     fn rebalance_right(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {

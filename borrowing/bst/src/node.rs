@@ -1,10 +1,10 @@
 #![forbid(unsafe_code)]
 pub struct Node<K, V> {
-    key        : K,
-    value      : V,
-    height     : usize,
-    left_child : Option<Box<Node<K, V>>>,
-    right_child: Option<Box<Node<K, V>>>,
+    pub key        : K,
+    pub value      : V,
+    pub height     : usize,
+    pub left_child : Option<Box<Node<K, V>>>,
+    pub right_child: Option<Box<Node<K, V>>>,
 }
 
 impl<K: Ord, V> Node<K, V> {
