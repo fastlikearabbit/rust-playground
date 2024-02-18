@@ -1,9 +1,9 @@
 #![forbid(unsafe_code)]
-use std::borrow::Borrow;
+use std::{borrow::Borrow, cmp::Ordering};
 use crate::node::Node;
 
 pub struct AVLTreeMap<K, V> {
-    root: Option<Node<K, V>>,
+    root: Option<Box<Node<K, V>>>,
     height : usize,
 }
 
@@ -83,7 +83,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         Some(left_of_root)
     }
 
-    fn rebalance_left(mut root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
+    fn rebalance_left(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
         if Self::height(&root.as_ref().unwrap().left_child) - Self::height(&root.as_ref().unwrap().right_child) == 2 {
             Self::rotate_right(root)
         } else {
@@ -107,25 +107,44 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         }
     }
 
+    /// TODO: rewrite this to be get_key_value_helper() instead and use it in get related functionality
+    fn get_helper<'node, Q>(root: &'node Option<Box<Node<K, V>>>, key: &Q) -> Option<&'node V> 
+    where
+        K: Borrow<Q>,
+        Q: Ord + ?Sized,
+    {
+        if root.is_none() { return None; }
+
+        match key.cmp(root.as_ref().unwrap().key.borrow()) {
+            Ordering::Less => Self::get_helper(&root.as_ref().unwrap().right_child, key),
+            Ordering::Equal => Some(&root.as_ref().unwrap().value),
+            Ordering::Greater => Self::get_helper(&root.as_ref().unwrap().left_child, key),
+        }
+    }
+
     pub fn get<Q>(&self, key: &Q) -> Option<&V>
     where
         K: Borrow<Q>,
-        Q: ?Sized, {
-        todo!();
+        Q: Ord + ?Sized, 
+    {
+        Self::get_helper(&self.root, key)
+        
     }
     
     pub fn get_key_value<Q>(&self, key: &Q) -> Option<(&K, &V)>
     where
         K: Borrow<Q>,
-        Q: ?Sized,  {
-        todo!();
+        Q: Ord + ?Sized,  
+    {
+            todo!();
     }
     
     pub fn contains_key<Q>(&self, key: &Q) -> bool
     where
         K: Borrow<Q>,
-        Q: ?Sized {
-        todo!();
+        Q: Ord + ?Sized 
+    {
+        self.get(key).is_some()
     }
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
