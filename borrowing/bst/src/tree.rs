@@ -38,7 +38,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
     }
 
     fn fix_height(mut root: Option<&mut Box<Node<K, V>>>) {
-        let mut root = root.as_mut().unwrap();
+        let root = root.unwrap();
         let left_height  = Self::height(&root.left_child);
         let right_height = Self::height(&root.right_child);
         root.height = if left_height > right_height { left_height + 1} else { right_height + 1};
@@ -63,6 +63,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         Some(right_of_root)
     }
 
+    /// assumes root has right child
     fn rotate_right(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
         let mut root = root.unwrap();
         
@@ -83,20 +84,27 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
     }
 
     fn rebalance_left(mut root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
-        // let root = root.unwrap();
-        // if Self::height(&root.right_child)
-        //     - Self::height(&root.left_child) == 2 {
-        //     root = Self::rotate_left(Some(root));
-        // } else {
-        //     root.right_child = Self::rotate_right(root.unwrap().right_child);
-        //     root = Self::rotate_left(root);
-        // }
-
-        None
+        if Self::height(&root.as_ref().unwrap().left_child) - Self::height(&root.as_ref().unwrap().right_child) == 2 {
+            Self::rotate_right(root)
+        } else {
+            let mut root = root.unwrap();
+            let mut left_child = root.left_child;
+            root.left_child = Self::rotate_left(left_child.take());
+            
+            Self::rotate_right(Some(root))
+        }
     }
 
     fn rebalance_right(root: Option<Box<Node<K, V>>>) -> Option<Box<Node<K, V>>> {
-        todo!("Implement rebalance");
+        if Self::height(&root.as_ref().unwrap().right_child) - Self::height(&root.as_ref().unwrap().left_child) == 2 {
+            Self::rotate_left(root)
+        } else {
+            let mut root = root.unwrap();
+            let mut right_child = root.right_child;
+            root.right_child = Self::rotate_right(right_child.take());
+            
+            Self::rotate_left(Some(root))
+        }
     }
 
     pub fn get<Q>(&self, key: &Q) -> Option<&V>
