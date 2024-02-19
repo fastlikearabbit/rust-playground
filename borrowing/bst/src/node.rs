@@ -36,3 +36,10 @@ impl<K: Ord, V> Node<K, V> {
         self.height = height;
     }
 }
+
+
+impl<K, V> From<Node<K, V>> for Option<Box<Node<K, V>>> {
+    fn from(node: Node<K, V>) -> Self {
+        Some(Box::new(node))
+    }
+}

@@ -7,13 +7,13 @@ pub struct AVLTreeMap<K, V> {
     height : usize,
 }
 
-impl<K: Ord, V> Default for AVLTreeMap<K, V> {
+impl<K: Ord, V: Clone> Default for AVLTreeMap<K, V> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<K: Ord, V> AVLTreeMap<K, V> {
+impl<K: Ord, V: Clone> AVLTreeMap<K, V> {
     pub fn new() -> Self {
         Self {
             root   : None,
@@ -134,17 +134,41 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         self.get(key).is_some()
     }
 
-    fn insert_helper(root: Option<&mut Box<Node<K, V>>>, key: K, value: V) -> Option<Box<Node<K, V>>> {
-        if root.is_none() { return Some(Box::new(Node::leaf(key, value))); }
-
-        match key.cmp(root.as_ref().unwrap().key.borrow()) {
-            Ordering::Less => todo!(),
-            Ordering::Equal => todo!(),
-            Ordering::Greater => todo!(),
+    fn insert_helper(mut root: Option<Box<Node<K, V>>>, key: K, value: V) -> (Box<Node<K, V>>, Option<V>) {
+        if root.is_none() {
+            root = Node::leaf(key, value).into();
+            return (root.unwrap(), None);
         }
+
+        let mut root = root.unwrap();
+        let mut result = None;
+        match key.cmp(&root.key) {
+            Ordering::Less => {
+                let (child_root, child_res) = Self::insert_helper(root.left_child, key, value);
+                root.left_child = Some(child_root);
+                root = Self::rebalance_left(root);
+                
+            },
+            Ordering::Equal => {
+                let previous_value = root.value.clone();
+                root.value = value;
+
+                result = Some(previous_value);
+            },
+            Ordering::Greater => { 
+                let (child_root, child_res) = Self::insert_helper(root.right_child, key, value);
+                root.right_child = Some(child_root);
+                root = Self::rebalance_right(root);
+            },
+        }
+
+        (root, result)
     }
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
-        todo!();
+        let root = self.root.take();
+        let (newroot, result) = Self::insert_helper(root, key, value);
+        self.root = Some(newroot);
+        result
     }
     
     pub fn nth_key_value(&self, k: usize) -> Option<(&K, &V)> {
