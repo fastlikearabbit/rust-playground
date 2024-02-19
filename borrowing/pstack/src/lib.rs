@@ -34,14 +34,28 @@ impl<T> Iterator for PStack<T> {
     type Item = PRef<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        todo!();
+        if self.top.is_none() {
+            None
+        } else {
+            let top = self.top.take();
+            self.size -= 1;
+            top
+        }
     }
 }
 
 impl<T> Clone for PStack<T> {
     fn clone(&self) -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        let mut new_stack = Self::new();
+        while let Some(top) = self.top {
+            
+        }
+
+
+        Self {
+            top: None,
+            size: 0,
+        }
     }
 }
 
@@ -51,13 +65,19 @@ impl<T> PStack<T> {
     }
 
     pub fn push(&self, value: T) -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        let new_value = Rc::new(value);
+
+        Self::new()
     }
 
     pub fn pop(&self) -> Option<(PRef<T>, Self)> {
-        // TODO: your code goes here.
-        unimplemented!()
+        if self.is_empty() {
+            None
+        } else {
+            
+            None
+        }
+
     }
 
     pub fn len(&self) -> usize {

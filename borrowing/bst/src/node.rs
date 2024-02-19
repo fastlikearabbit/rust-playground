@@ -2,7 +2,7 @@
 pub struct Node<K, V> {
     pub key        : K,
     pub value      : V,
-    pub height     : usize,
+        height     : usize,
     pub left_child : Option<Box<Node<K, V>>>,
     pub right_child: Option<Box<Node<K, V>>>,
 }
