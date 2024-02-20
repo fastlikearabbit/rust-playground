@@ -1,9 +1,9 @@
 #![forbid(unsafe_code)]
-use std::{path::Iter, rc::Rc};
+use std::rc::Rc;
 
 pub struct PRef<T> {
     data: T,
-    prev: Rc<PRef<T>>,
+    prev: Option<Rc<PRef<T>>>,
 }
 
 impl<T> std::ops::Deref for PRef<T> {
@@ -17,7 +17,7 @@ impl<T> std::ops::Deref for PRef<T> {
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct PStack<T> {
-    top : Option<PRef<T>>,
+    top : Option<Rc<PRef<T>>>,
     size: usize,
 }
 
@@ -34,27 +34,15 @@ impl<T> Iterator for PStack<T> {
     type Item = PRef<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.top.is_none() {
-            None
-        } else {
-            let top = self.top.take();
-            self.size -= 1;
-            top
-        }
+       todo!()
     }
 }
 
 impl<T> Clone for PStack<T> {
     fn clone(&self) -> Self {
-        let mut new_stack = Self::new();
-        while let Some(top) = self.top {
-            
-        }
-
-
         Self {
-            top: None,
-            size: 0,
+            top: self.top.clone(),
+            size: self.size,
         }
     }
 }
@@ -65,19 +53,29 @@ impl<T> PStack<T> {
     }
 
     pub fn push(&self, value: T) -> Self {
-        let new_value = Rc::new(value);
+        let new_ref = Rc::new(PRef {
+            data: value,
+            prev: self.top.clone(),
+        });
 
-        Self::new()
+        PStack {
+            top: Some(new_ref),
+            size: self.size + 1,
+        }
     }
 
     pub fn pop(&self) -> Option<(PRef<T>, Self)> {
-        if self.is_empty() {
-            None
-        } else {
-            
-            None
-        }
+        self.top.as_ref().and_then(|top_ref| {
+            let prev_top = &top_ref.prev;
+            let new_stack = PStack {
+                top: prev_top.clone(),
+                size: self.size.saturating_sub(1),
+            };
 
+            Rc::try_unwrap(top_ref.clone()).ok().map(|popped_ref| {
+                (popped_ref, new_stack)
+            })
+        })
     }
 
     pub fn len(&self) -> usize {
