@@ -2,7 +2,8 @@
 pub struct Node<K, V> {
     pub key        : K,
     pub value      : V,
-        height     : usize,
+    pub height     : usize,
+    pub size       : usize, 
     pub left_child : Option<Box<Node<K, V>>>,
     pub right_child: Option<Box<Node<K, V>>>,
 }
@@ -15,6 +16,7 @@ impl<K: Ord, V> Node<K, V> {
                 key,
                 value,
                 height: 0,
+                size  : 1,
                 left_child,
                 right_child,
             }
@@ -24,16 +26,10 @@ impl<K: Ord, V> Node<K, V> {
             key,
             value,
             height: 0,
+            size  : 1,
             left_child: None,
             right_child: None,
         }
-    }
-    pub fn height(&self) -> usize {
-        self.height
-    }
-
-    pub fn set_height(&mut self, height: usize) {
-        self.height = height;
     }
 }
 
