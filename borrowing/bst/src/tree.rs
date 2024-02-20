@@ -1,5 +1,5 @@
 #![forbid(unsafe_code)]
-use std::{borrow::Borrow, cmp::Ordering};
+use std::{ borrow::Borrow, cmp::Ordering };
 use crate::node::Node;
 
 pub struct AVLTreeMap<K, V> {
@@ -7,16 +7,16 @@ pub struct AVLTreeMap<K, V> {
     len : usize,
 }
 
-impl<K: Ord, V: Clone> Default for AVLTreeMap<K, V> {
+impl<K: Ord, V> Default for AVLTreeMap<K, V> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<K: Ord, V: Clone> AVLTreeMap<K, V> {
+impl<K: Ord, V> AVLTreeMap<K, V> {
     pub fn new() -> Self {
         Self {
-            root   : None,
+            root: None,
             len : 0,
         }
     }
@@ -46,143 +46,7 @@ impl<K: Ord, V: Clone> AVLTreeMap<K, V> {
         let right_size = Self::size(&root.right_child);
         root.size = 1 + left_size + right_size;
     }
-    /// assumes root has right child
-    fn rotate_left(mut root: Box<Node<K, V>>) -> Box<Node<K, V>> {
-        // takes ownership of root's right child
-        let mut right_of_root = root.right_child.take().unwrap();
-        
-        // root takes ownership of right_of_root's left child
-        root.right_child = right_of_root.left_child.take();
 
-        // right_of_root's left child takes ownership of root
-        right_of_root.left_child = Some(root);
-
-        Self::fix_height(right_of_root.left_child.as_mut().unwrap());
-        Self::fix_height(&mut right_of_root);
-        
-        right_of_root
-    }
-
-    /// assumes root has left child
-    fn rotate_right(mut root: Box<Node<K, V>>) -> Box<Node<K, V>> {        
-        // takes ownership of root's left child
-        let mut left_of_root = root.left_child.take().unwrap();
-        
-        // root takes ownership of left_of_root's right child
-        root.left_child = left_of_root.right_child.take();
-
-        // right_of_root's right child takes ownership of root
-        left_of_root.right_child = Some(root);
-
-        Self::fix_height(left_of_root.right_child.as_mut().unwrap());
-        Self::fix_height(&mut left_of_root);
-   
-        left_of_root
-    }
-
-    fn rebalance_left(mut root: Box<Node<K, V>>) -> Box<Node<K, V>> {
-        if Self::height(&root.left_child) == Self::height(&root.right_child) + 2 {
-            Self::rotate_right(root)
-        } else {
-            let mut left_child = root.left_child;
-            root.left_child = Some(Self::rotate_left(left_child.unwrap()));
-            
-            Self::rotate_right(root)
-        }
-    }
-
-    fn rebalance_right(mut root: Box<Node<K, V>>) -> Box<Node<K, V>> {
-        if Self::height(&root.right_child) == Self::height(&root.left_child) + 2 {
-            Self::rotate_left(root)
-        } else {
-            let mut right_child = root.right_child;
-            root.right_child = Some(Self::rotate_right(right_child.unwrap()));
-            
-            Self::rotate_left(root)
-        }
-    }
-
-    fn get_key_value_helper<'node, Q>(root: &'node Option<Box<Node<K, V>>>, key: &Q) -> Option<(&'node K, &'node V)>
-    where
-        K: Borrow<Q>,
-        Q: Ord + ?Sized,
-    {
-        if root.is_none() { return None; }
-
-        match key.cmp(root.as_ref().unwrap().key.borrow()) {
-            Ordering::Less => Self::get_key_value_helper(&root.as_ref().unwrap().right_child, key),
-            Ordering::Equal => Some((&root.as_ref()?.key, &root.as_ref()?.value)),
-            Ordering::Greater => Self::get_key_value_helper(&root.as_ref().unwrap().left_child, key),
-        }
-    }
-
-    pub fn get<Q>(&self, key: &Q) -> Option<&V>
-    where
-        K: Borrow<Q>,
-        Q: Ord + ?Sized, 
-    {
-        match Self::get_key_value_helper(&self.root, key) {
-            Some((_, value)) => Some(value),
-            _ => None,
-        }
-        
-    }
-    
-    pub fn get_key_value<Q>(&self, key: &Q) -> Option<(&K, &V)>
-    where
-        K: Borrow<Q>,
-        Q: Ord + ?Sized,  
-    {
-            Self::get_key_value_helper(&self.root, key)
-    }
-    
-    pub fn contains_key<Q>(&self, key: &Q) -> bool
-    where
-        K: Borrow<Q>,
-        Q: Ord + ?Sized
-    {
-        self.get(key).is_some()
-    }
-
-    fn insert_helper(mut root: Option<Box<Node<K, V>>>, key: K, value: V) -> (Box<Node<K, V>>, Option<V>) {
-        if root.is_none() {
-            root = Node::leaf(key, value).into();
-            return (root.unwrap(), None);
-        }
-
-        let mut root = root.unwrap();
-        let mut result = None;
-        match key.cmp(&root.key) {
-            Ordering::Less => {
-                let (child_root, child_res) = Self::insert_helper(root.left_child, key, value);
-                root.left_child = Some(child_root);
-                root = Self::rebalance_left(root);
-                
-            },
-            Ordering::Equal => {
-                let previous_value = root.value.clone();
-                root.value = value;
-
-                result = Some(previous_value);
-            },
-            Ordering::Greater => { 
-                let (child_root, child_res) = Self::insert_helper(root.right_child, key, value);
-                root.right_child = Some(child_root);
-                root = Self::rebalance_right(root);
-            },
-        }
-
-        (root, result)
-    }
-
-    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
-        let root = self.root.take();
-        let (newroot, result) = Self::insert_helper(root, key, value);
-        self.root = Some(newroot);
-        self.len += 1;
-        result
-    }
-    
     pub fn nth_key_value(&self, n: usize) -> Option<(&K, &V)> {
         Self::nth_element_helper(&self.root, n)
     }
@@ -196,56 +60,137 @@ impl<K: Ord, V: Clone> AVLTreeMap<K, V> {
             _ => None,
         }
     }
-
-    fn take_min_node(mut root: Box<Node<K, V>>) -> (Box<Node<K, V>>, (K, V)) {
-        match root.left_child.take() {
-            Some(left) => {
-                let (new_left, min_key_val) = Self::take_min_node(left);
-                root.left_child = Some(new_left);
-                (root, min_key_val)
-            }
-            None => (root.right_child.unwrap(), (root.key, root.value))
-        }
-    }
-
-    fn remove_helper<Q>(root: Option<Box<Node<K, V>>>, key: &Q) -> (Option<Box<Node<K, V>>>, Option<(K, V)>)
+    
+    pub fn get<Q>(&self, key: &Q) -> Option<&V>
     where
         K: Borrow<Q>,
         Q: Ord + ?Sized, 
     {
-        root.map(|mut node|
-        {
-            match key.cmp(node.key.borrow()) {
-                Ordering::Less => {
-                    let (new_left, removed_key_val) = Self::remove_helper(node.left_child.take(), key);
-                    node.left_child = new_left;
-                    node = Self::rebalance_left(node);
-                    (Some(node), removed_key_val)
-                }
-                Ordering::Equal => {
-                    let removed_key_val = Some((node.key, node.value));
-                    if node.left_child.is_none() {
-                        return (node.right_child, removed_key_val);
-                    }
-                    if node.right_child.is_none() {
-                        return (node.left_child, removed_key_val);
-                    }
-
-                    let (mut min_node, _) = Self::take_min_node(node.right_child.unwrap());
-                    min_node.left_child = node.left_child;
-                    Self::fix_height(&mut min_node);
-                    (Some(min_node), removed_key_val)
-                },
-                Ordering::Greater => {
-                    let (new_right, removed_key_val) = Self::remove_helper(node.right_child.take(), key);
-                    node.right_child = new_right;
-                    node = Self::rebalance_right(node);
-                    (Some(node), removed_key_val)
-                },
-            }
-        }).unwrap_or((None, None))
+        self.get_key_value(key).map(|(_, v)| v)
     }
     
+    fn get_key_value_recursive<'node, Q>(root: &'node Option<Box<Node<K, V>>>, key: &Q) -> Option<(&'node K, &'node V)>
+    where
+        K: Borrow<Q>,
+        Q: Ord + ?Sized
+    {
+        if root.is_none() { return None; }
+
+        let root = root.as_ref().unwrap();
+        match key.cmp(root.key.borrow()) {
+            Ordering::Less => Self::get_key_value_recursive(&root.left_child, key),
+            Ordering::Equal => Some((&root.key, &root.value)),
+            Ordering::Greater => Self::get_key_value_recursive(&root.right_child, key),
+        }
+    }
+    pub fn get_key_value<Q>(&self, key: &Q) -> Option<(&K, &V)>
+    where
+        K: Borrow<Q>,
+        Q: Ord + ?Sized,  
+    {
+        Self::get_key_value_recursive(&self.root, key)
+    }
+    
+    pub fn contains_key<Q>(&self, key: &Q) -> bool
+    where
+        K: Borrow<Q>,
+        Q: Ord + ?Sized
+    {
+        self.get(key).is_some()
+    }
+
+    fn insert_recursive(root: Option<Box<Node<K, V>>>, node: Box<Node<K, V>>) -> (Option<Box<Node<K, V>>>, Option<V>) {
+        if root.is_none() {
+            return (Some(node), None);
+        }
+        let mut root = root.unwrap();
+        match node.key.cmp(root.key.borrow()) {
+            Ordering::Less => {
+                let (updated_left, replaced_value) = Self::insert_recursive(root.left_child.take(), node);
+                root.left_child = updated_left;
+                (Some(root), replaced_value)
+            },
+            Ordering::Equal => {
+                let previous_value = root.value;
+                root.value = node.value;
+                (Some(root), Some(previous_value))
+            },
+            Ordering::Greater => {
+                let (updated_right, replaced_value) = Self::insert_recursive(root.right_child.take(), node);
+                root.right_child = updated_right;
+                (Some(root), replaced_value)
+            }
+        }
+    }
+
+    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
+        let (root, previous_value) = 
+            Self::insert_recursive(self.root.take(), Node::leaf(key, value).into());
+        self.root = root;
+        previous_value
+    }
+
+    fn remove_entry_recursive<Q>(root: Option<Box<Node<K, V>>>, key: &Q) -> (Option<Box<Node<K, V>>>, Option<(K, V)>)
+    where
+        K: Borrow<Q>,
+        Q: Ord + ?Sized,
+    {
+        if root.is_none() { return (None, None); }
+
+        let mut root = root.unwrap();
+        match key.cmp(root.key.borrow()) {
+            Ordering::Less => {
+                let (updated_left, removed_entry) = Self::remove_entry_recursive(root.left_child.take(), key);
+                root.left_child = updated_left;
+                (Some(root), removed_entry)
+            }
+            Ordering::Equal => {
+                match (root.left_child.take(), root.right_child.take()) {
+                    (None, None) => (None, Some((root.key, root.value))), // No children
+
+                    (Some(left_child), None) => (Some(left_child), Some((root.key, root.value))), // Only left child
+
+                    (None, Some(right_child)) => (Some(right_child), Some((root.key, root.value))), // Only right child
+                    
+                    (Some(left_child), Some(right_child)) => {
+                        // Two children: Find the in-order successor.
+                        let (right_with_successor_removed, mut successor_node) = Self::remove_min(right_child);
+
+                        std::mem::swap(&mut root.key, &mut successor_node.key);
+                        std::mem::swap(&mut root.value, &mut successor_node.value);
+
+                        root.left_child = Some(left_child);
+                        root.right_child = right_with_successor_removed;
+
+                        (Some(root), Some((successor_node.key, successor_node.value)))
+                    }
+                }
+            },
+            Ordering::Greater => {
+                let (updated_right, removed_entry) = Self::remove_entry_recursive(root.right_child.take(), key);
+                root.right_child = updated_right;
+                (Some(root), removed_entry)
+            },
+        }
+    }
+
+    fn remove_min(mut node: Box<Node<K, V>>) -> (Option<Box<Node<K, V>>>, Box<Node<K, V>>) {
+        match node.left_child.take() {
+            Some(left) => {
+                let (new_left, min_node) = Self::remove_min(left);
+                node.left_child = new_left;
+                (Some(node), min_node)
+            },
+            None => {
+                // No left child means this node is the minimum.
+                // Return the right child to replace this node in the tree,
+                // and return this node as the removed minimum node.
+                (node.right_child.take(), node)
+            }
+        }
+    }
+    
+
     pub fn remove<Q>(&mut self, key: &Q) -> Option<V> 
     where
         K: Borrow<Q>,
@@ -253,15 +198,14 @@ impl<K: Ord, V: Clone> AVLTreeMap<K, V> {
     {
         self.remove_entry(key).map(|(_, v)| v)
     }
-    
+
     pub fn remove_entry<Q>(&mut self, key: &Q) -> Option<(K, V)>
     where
         K: Borrow<Q> + Ord,
         Q: Ord + ?Sized, 
     {   
-        let (new_root, removed_key_val) = Self::remove_helper(self.root.take(), key);
-        self.root = new_root;
-        if removed_key_val.is_some() { self.len -= 1; }
-        removed_key_val
+       let (mut root, removed_entry) = Self::remove_entry_recursive(self.root.take(), key);
+       self.root = root.take();
+       removed_entry
     }
 }
