@@ -129,7 +129,7 @@ impl<K: Ord, V: Clone> AVLTreeMap<K, V> {
     pub fn contains_key<Q>(&self, key: &Q) -> bool
     where
         K: Borrow<Q>,
-        Q: Ord + ?Sized 
+        Q: Ord + ?Sized
     {
         self.get(key).is_some()
     }
@@ -164,6 +164,7 @@ impl<K: Ord, V: Clone> AVLTreeMap<K, V> {
 
         (root, result)
     }
+
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
         let root = self.root.take();
         let (newroot, result) = Self::insert_helper(root, key, value);
@@ -175,19 +176,37 @@ impl<K: Ord, V: Clone> AVLTreeMap<K, V> {
         todo!();
     }
 
+    fn remove_helper<Q>(root: Option<Box<Node<K, V>>>, key: &Q) -> (Option<Box<Node<K, V>>>, Option<V>)
+    where
+        K: Borrow<Q>,
+        Q: Ord + ?Sized, 
+    {
+        if root.is_none() { return (None, None); }
+
+        (None, None)
+    }
+
+    fn find_successor(root: &Box<Node<K, V>>) -> Option<V> {
+        let mut current = root;
+        while let Some(ref left_child) = current.left_child {
+            current = left_child;
+        }
+        Some(current.value.clone())
+    }
+    
     pub fn remove<Q>(&mut self, key: &Q) -> Option<V> 
     where
         K: Borrow<Q>,
-        Q: ?Sized, 
+        Q: Ord + ?Sized, 
     {
-        todo!();
+        self.remove_entry(key).map(|(_, v)| v)
     }
     
     pub fn remove_entry<Q>(&mut self, key: &Q) -> Option<(K, V)>
     where
-        K: Borrow<Q>,
-        Q: ?Sized, 
-    {
-        todo!();
+        K: Borrow<Q> + Ord,
+        Q: Ord + ?Sized, 
+    {   
+       todo!();
     }
 }
