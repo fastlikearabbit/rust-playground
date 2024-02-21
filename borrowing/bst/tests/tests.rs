@@ -76,8 +76,8 @@ fn test_nth() {
 
     println!("{:?}", map);
 
-    // assert_eq!(map.remove_entry(&2), Some((2, 2)));
-    // assert_eq!(map.insert(2, 2), None);
+    assert_eq!(map.remove_entry(&2), Some((2, 2)));
+    assert_eq!(map.insert(2, 2), None);
 
     assert_eq!(map.nth_key_value(0), Some((&1, &1)));
     assert_eq!(map.nth_key_value(1), Some((&2, &2)));
@@ -105,7 +105,7 @@ fn performance1() {
         .map(|(index, (key, value))| (key, value, index))
         .collect();
     vec.shuffle(&mut rng);
-    for (key, value, index) in &vec {
+    for (key, value, _index) in &vec {
         assert!(map.contains_key(key));
        // assert_eq!(map.nth_key_value(*index), Some((key, value)));
         assert_eq!(map.get_key_value(key), Some((key, value)));
@@ -126,6 +126,7 @@ fn performance2() {
     for _ in 0..count {
         let key = rng.gen();
         let value = rng.gen();
+        println!("{:?}", map);
         match rng.gen_range(0usize..10) {
             0..=7 => {
                 assert_eq!(map.insert(key, value), hash_map.insert(key, value));

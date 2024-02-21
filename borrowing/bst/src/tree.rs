@@ -38,7 +38,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         node.as_ref().map_or(0, |n| n.size)
     }
 
-    fn fix_height(root: &mut Box<Node<K, V>>) {
+    fn fix_tree_props(root: &mut Box<Node<K, V>>) {
         // fix height
         let left_height  = Self::height(&root.left_child);
         let right_height = Self::height(&root.right_child);
@@ -61,8 +61,8 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         // right_of_root's left child takes ownership of root
         right_of_root.left_child = Some(root);
 
-        Self::fix_height(right_of_root.left_child.as_mut().unwrap());
-        Self::fix_height(&mut right_of_root);
+        Self::fix_tree_props(right_of_root.left_child.as_mut().unwrap());
+        Self::fix_tree_props(&mut right_of_root);
         
         right_of_root
     }
@@ -78,8 +78,8 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         // right_of_root's right child takes ownership of root
         left_of_root.right_child = Some(root);
 
-        Self::fix_height(left_of_root.right_child.as_mut().unwrap());
-        Self::fix_height(&mut left_of_root);
+        Self::fix_tree_props(left_of_root.right_child.as_mut().unwrap());
+        Self::fix_tree_props(&mut left_of_root);
    
         left_of_root
     }
@@ -90,13 +90,11 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
             if Self::height(&left_of_root.left_child) > Self::height(&left_of_root.right_child) {
                 root = Self::rotate_right(root);
             } else {
-                let left_child = root.left_child;
-                root.left_child = Some(Self::rotate_left(left_child.unwrap()));
-                
+                root.left_child = Some(Self::rotate_left(root.left_child.unwrap()));
                 root = Self::rotate_right(root);
             }
         } else {
-            Self::fix_height(&mut root);
+            Self::fix_tree_props(&mut root);
         }
 
         root
@@ -108,13 +106,11 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
             if Self::height(&right_of_root.right_child) > Self::height(&right_of_root.left_child) {
                 root = Self::rotate_left(root);
             } else {
-                let right_child = root.right_child;
-                root.right_child = Some(Self::rotate_right(right_child.unwrap()));
-                
+                root.right_child = Some(Self::rotate_right(root.right_child.unwrap())); 
                 root = Self::rotate_left(root)
             } 
         } else {
-            Self::fix_height(&mut root);
+            Self::fix_tree_props(&mut root);
         }
         root
     }
@@ -123,7 +119,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         Self::nth_element_recursive(&self.root, n)
     }
 
-    fn nth_element_recursive(root: &Option<Box<Node<K, V>>>, mut n: usize) -> Option<(&K, &V)> {
+    fn nth_element_recursive(root: &Option<Box<Node<K, V>>>, n: usize) -> Option<(&K, &V)> {
         let left_size = Self::size(&root.as_ref()?.left_child);
         match root {
             Some(ref node) if n < left_size => Self::nth_element_recursive(&node.left_child, n),
@@ -207,6 +203,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         previous_value
     }
 
+    // TODO: remove has bug related to rebalancing (call unwrap on None)
     fn remove_entry_recursive<Q>(root: Option<Box<Node<K, V>>>, key: &Q) -> (Option<Box<Node<K, V>>>, Option<(K, V)>)
     where
         K: Borrow<Q>,
@@ -241,12 +238,11 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
                         // Two children: Find the in-order successor.
                         let (right_with_successor_removed, mut successor_node) = 
                             Self::remove_min(right_child);
-
+  
                         std::mem::swap(&mut root.value, &mut successor_node.value);
-
+                        std::mem::swap(&mut root.key, &mut successor_node.key);
                         root.left_child = Some(left_child);
                         root.right_child = right_with_successor_removed;
-
                         (Some(root), Some((successor_node.key, successor_node.value)))
                     }
                 }
