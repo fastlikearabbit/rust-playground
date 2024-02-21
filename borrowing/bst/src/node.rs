@@ -1,4 +1,6 @@
 #![forbid(unsafe_code)]
+
+#[derive(Debug)]
 pub struct Node<K, V> {
     pub key        : K,
     pub value      : V,
@@ -15,7 +17,7 @@ impl<K: Ord, V> Node<K, V> {
             Self {
                 key,
                 value,
-                height: 0,
+                height: 1,
                 size  : 1,
                 left_child,
                 right_child,
@@ -25,7 +27,7 @@ impl<K: Ord, V> Node<K, V> {
         Self {
             key,
             value,
-            height: 0,
+            height: 1,
             size  : 1,
             left_child: None,
             right_child: None,
