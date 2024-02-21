@@ -4,6 +4,6 @@
 
 # VS Code settings
 **/.vscode
-
+**/.idea
 # MacOS useless DS_Store
 **/.DS_Store
