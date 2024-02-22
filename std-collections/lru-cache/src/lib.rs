@@ -33,8 +33,6 @@ impl<K: Clone + Hash + Ord, V> LRUCache<K, V> {
         let (_, key) = self.lru_map.remove_entry(&rank).unwrap();
         self.lru_map.insert(self.rank + 1, key.clone());
         self.cache.insert(key.clone(), (value, self.rank + 1));
-
-        self.size += 1;
         self.rank += 1;
 
         match self.cache.get(&key) {
@@ -57,22 +55,19 @@ impl<K: Clone + Hash + Ord, V> LRUCache<K, V> {
             false => {
                 if self.size == self.capacity {
                     let (_, lru_key) = self.lru_map.pop_first().unwrap();
-                    let (_, (lru_value, _)) = self.cache.remove_entry(&lru_key).unwrap();
+                    self.cache.remove_entry(&lru_key);
 
                     self.cache.insert(key.clone(), (value, self.rank + 1));
                     self.lru_map.insert(self.rank + 1, key);
-                    
-                    self.rank += 1;
-
-                    Some(lru_value)
-
                 } else {
                     self.cache.insert(key.clone(), (value, self.rank + 1));
-                    self.lru_map.insert(self.rank + 1, key.clone());
-                    
+                    self.lru_map.insert(self.rank + 1, key.clone());    
+
                     self.size += 1;
-                    None
                 }
+                self.rank += 1;
+                None
+
             },
         }
     }
