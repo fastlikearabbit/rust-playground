@@ -6,7 +6,7 @@ Before solving this problem, please finish it online by the link above.
 
 ## Task
 
-Implement the structure `Game`. `Game::new` accepts two agents that will play against each other. Function `Game::play_round()` simulates one round of the game, and returns the overcome it. Functions `Game::left_score()` and `Game::right_score()` return the score of each player.
+Implement the structure `Game`. `Game::new` accepts two agents that will play against each other. Function `Game::play_round()` simulates one round of the game, and returns the overcome this round. Functions `Game::left_score()` and `Game::right_score()` return the score of each player.
 
 The rounds go as follows. Each of the two agents decides whether he will cooperate with the other agent or betray him. If both agents cooperate, the score of each increase by 2. If both agents cheat, then the score of both remains unchanged. If one cooperates and the other cheats, the cheater's score increases by 3 and the cooperating agent's score decreases by 1. Initially, each agent's score is 0.
 
