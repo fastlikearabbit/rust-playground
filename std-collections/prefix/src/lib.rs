@@ -7,8 +7,8 @@ pub fn longest_common_prefix(strs: Vec<&str>) -> String {
 
     let mut result = String::new();
     let vec_chars: Vec<_>= strs[1..].into_iter().map(|str| str.chars().collect::<Vec<_>>()).collect();
-   
-    for (i, char) in first_str.char_indices() {
+
+    for (i, char) in first_str.chars().enumerate() {
         for str in &vec_chars {
             if i >= str.len() || char != str[i] {
                 return result;
