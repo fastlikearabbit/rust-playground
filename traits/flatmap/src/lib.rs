@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+use core::slice::SlicePattern;
 use std::{borrow::Borrow, iter::FromIterator, ops::Index};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -9,28 +10,23 @@ pub struct FlatMap<K, V>(Vec<(K, V)>);
 
 impl<K: Ord, V> FlatMap<K, V> {
     pub fn new() -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        Self(Vec::new())
     }
 
     pub fn len(&self) -> usize {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.0.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.0.is_empty()
     }
 
     pub fn capacity(&self) -> usize {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.0.capacity()
     }
 
     pub fn as_slice(&self) -> &[(K, V)] {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.0.as_slice()
     }
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
