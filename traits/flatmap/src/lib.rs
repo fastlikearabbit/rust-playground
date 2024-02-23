@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 
-use core::slice::SlicePattern;
+//use core::slice::SlicePattern;
 use std::{borrow::Borrow, iter::FromIterator, ops::Index};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,24 +34,75 @@ impl<K: Ord, V> FlatMap<K, V> {
         unimplemented!()
     }
 
-    // pub fn get(&self, key: ???) -> Option<&V>;
+    pub fn get<Q>(&self, key: &Q) -> Option<&V>
+    where 
+        K: Borrow<Q>,
+        Q: Ord + ?Sized,
+    {
+        todo!()
+    }
 
-    // pub fn remove(&mut self, key: ???) -> Option<V>;
+    pub fn remove<Q>(&mut self, key: &Q) -> Option<V>
+    where 
+        K: Borrow<Q>,
+        Q: Ord + ?Sized,
+    {
+        todo!()
+    }
 
-    // pub fn remove_entry(&mut self, key: ???) -> Option<(K, V)>;
+    pub fn remove_entry<Q>(&mut self, key: &Q) -> Option<(K, V)>
+    where 
+    K: Borrow<Q>,
+    Q: Ord + ?Sized,
+    {
+        todo!()
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// impl Index<???> for FlatMap { ... }
+impl<K, Q, V> Index<&Q> for FlatMap<K, V>
+where
+    Q: Ord + ?Sized,
+{
+    type Output = V;
 
-// impl Extend<(K, V)> for FlatMap { ... }
+    fn index(&self, index: &Q) -> &Self::Output {
+        todo!()
+    }
+}
 
-// impl From<Vec<(K, V)>> for FlatMap { ... }
+impl<K, V> Extend<(K, V)> for FlatMap<K, V> {
+    fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
+        todo!()
+    }
+}
 
-// impl From<FlatMap<K, V>> for Vec<(K, V)> { ... }
+impl<K, V> From<Vec<(K, V)>> for FlatMap<K, V> {
+    fn from(value: Vec<(K, V)>) -> Self {
+        todo!()
+    }
+}
 
-// impl FromIterator<(K, V)> for FlatMap { ... }
+impl<K, V> From<FlatMap<K, V>> for Vec<(K, V)> {
+    fn from(value: FlatMap<K, V>) -> Self {
+        todo!()
+    }
+}
 
-// impl IntoIterator for FlatMap { ... }
+impl<K, V> FromIterator<(K, V)> for FlatMap<K, V> {
+    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
+        todo!()
+    }
+}
+
+impl<K, V> IntoIterator for FlatMap<K, V> {
+    type Item = (K, V);
+
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        todo!()
+    }
+}
 
