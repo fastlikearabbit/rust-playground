@@ -1,9 +1,10 @@
 #![forbid(unsafe_code)]
 use std::rc::Rc;
 
+#[derive(Debug)]
 pub struct PRef<T> {
-    data: T,
-    prev: Option<Rc<PRef<T>>>,
+    data: Rc<T>,
+    prev: Option<Box<PRef<T>>>,
 }
 
 impl<T> std::ops::Deref for PRef<T> {
@@ -17,7 +18,7 @@ impl<T> std::ops::Deref for PRef<T> {
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct PStack<T> {
-    top : Option<Rc<PRef<T>>>,
+    top : Option<Box<PRef<T>>>,
     size: usize,
 }
 
@@ -34,16 +35,14 @@ impl<T> Iterator for PStack<T> {
     type Item = PRef<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-       todo!()
-    }
+      todo!();
+    } 
 }
+
 
 impl<T> Clone for PStack<T> {
     fn clone(&self) -> Self {
-        Self {
-            top: self.top.clone(),
-            size: self.size,
-        }
+      todo!();
     }
 }
 
@@ -53,29 +52,23 @@ impl<T> PStack<T> {
     }
 
     pub fn push(&self, value: T) -> Self {
-        let new_ref = Rc::new(PRef {
-            data: value,
-            prev: self.top.clone(),
-        });
-
-        PStack {
-            top: Some(new_ref),
+       let new_element = PRef {
+            data: Rc::new(value),
+            prev: match &self.top {
+                Some(top) => Some(*top.to_owned()),
+                None => None,
+            }
+        };
+        
+        Self {
+            top: Some(Box::new(new_element)),
             size: self.size + 1,
         }
+
     }
 
     pub fn pop(&self) -> Option<(PRef<T>, Self)> {
-        self.top.as_ref().and_then(|top_ref| {
-            let prev_top = &top_ref.prev;
-            let new_stack = PStack {
-                top: prev_top.clone(),
-                size: self.size.saturating_sub(1),
-            };
-
-            Rc::try_unwrap(top_ref.clone()).ok().map(|popped_ref| {
-                (popped_ref, new_stack)
-            })
-        })
+        todo!();
     }
 
     pub fn len(&self) -> usize {
