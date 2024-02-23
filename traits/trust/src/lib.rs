@@ -5,7 +5,7 @@ use std::any::Any;
 
 pub trait Agent : Any {
     fn make_move(&mut self) -> Move;
-    fn as_any(&self) -> &dyn std::any::Any;
+    fn as_any(&mut self) -> &mut dyn Any;
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -85,7 +85,7 @@ impl Game {
     }
 
     fn send_move(receiver: &mut Box<dyn Agent>, mov: Move) {
-        match (receiver as &mut dyn Any).downcast_mut::<GrudgerAgent>() {
+        match receiver.as_any().downcast_mut::<GrudgerAgent>() {
             Some(grudger) => match mov {
                 Move::Cheat => {
                     grudger.has_opponent_cheated = true;
@@ -96,7 +96,7 @@ impl Game {
             _ => (),
         };
 
-        match (receiver as &mut dyn Any).downcast_mut::<CopycatAgent>() {
+        match receiver.as_any().downcast_mut::<CopycatAgent>() {
             Some(copycat) => {
                 copycat.opponent_last_move = mov;
                 return;
@@ -104,13 +104,10 @@ impl Game {
             _ => (),
         };
 
-        match (receiver as &mut dyn Any).downcast_mut::<DetectiveAgent>() {
+        match receiver.as_any().downcast_mut::<DetectiveAgent>() {
             Some(detective) => {
                 detective.opponent_last_move = mov;
-                match mov {
-                    Move::Cheat => detective.has_opponent_cheated = true,
-                    _ => ()
-                }
+                return;
             },
             _ => (),
         };
@@ -127,7 +124,7 @@ impl Agent for CheatingAgent {
         Move::Cheat
     }
 
-    fn as_any(&self) -> &dyn std::any::Any {
+    fn as_any(&mut self) -> &mut dyn Any {
         self
     }
 }
@@ -142,7 +139,7 @@ impl Agent for CooperatingAgent {
         Move::Cooperate
     }
 
-    fn as_any(&self) -> &dyn std::any::Any {
+    fn as_any(&mut self) -> &mut dyn Any {
         self
     }
 }
@@ -169,7 +166,7 @@ impl Agent for GrudgerAgent {
         }
     }
 
-    fn as_any(&self) -> &dyn std::any::Any {
+    fn as_any(&mut self) -> &mut dyn Any {
         self
     }
 }
@@ -177,14 +174,12 @@ impl Agent for GrudgerAgent {
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct CopycatAgent {
-    round_number: usize,
     opponent_last_move: Move,
 }
 
 impl Default for CopycatAgent {
     fn default() -> Self {
         Self {
-            round_number: 0,
             opponent_last_move: Move::None,
         }
     }
@@ -192,20 +187,14 @@ impl Default for CopycatAgent {
 
 impl Agent for CopycatAgent {
     fn make_move(&mut self) -> Move {
-        match self.round_number {
-            0 => Move::Cooperate,
-            _ => {
-                    self.round_number += 1;
-                    match self.opponent_last_move {
-                        Move::Cooperate => Move::Cheat,
-                        Move::Cheat => Move::Cooperate,
-                        _ => unreachable!()
-                }
-            }
+        match self.opponent_last_move {
+            Move::Cooperate => Move::Cooperate,
+            Move::Cheat => Move::Cheat,
+            Move::None => Move::Cooperate
         }
     }
 
-    fn as_any(&self) -> &dyn std::any::Any {
+    fn as_any(&mut self) -> &mut dyn Any {
         self
     }
 }
@@ -234,23 +223,21 @@ impl Agent for DetectiveAgent {
                             0     => Move::Cooperate,
                             1     => Move::Cheat,
                             2 | 3 => Move::Cooperate,
-                            _     => {
-                                match self.has_opponent_cheated {
-                                    true => Move::Cheat,
-                                    false => match self.opponent_last_move {
-                                        Move::Cooperate => Move::Cheat,
-                                        Move::Cheat => Move::Cooperate,
-                                        _ => unreachable!(),
-                                    }
-                                }
-                            }
+                            _     => match self.has_opponent_cheated {
+                                        true => self.opponent_last_move,
+                                        false => Move::Cheat
+                                    },
+                                
                         };
+        if self.opponent_last_move == Move::Cheat {
+            self.has_opponent_cheated = true;
+        }
         self.round_number += 1;
         mov
 
     }  
 
-    fn as_any(&self) -> &dyn std::any::Any {
+    fn as_any(&mut self) -> &mut dyn Any {
         self
     }
 }
