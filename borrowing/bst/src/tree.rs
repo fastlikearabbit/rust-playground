@@ -32,6 +32,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
 
     fn height(node: &Option<Box<Node<K, V>>>) -> usize {
         node.as_ref().map_or(0, |n| n.height)
+
     }
 
     fn size(node: &Option<Box<Node<K, V>>>) -> usize {
@@ -53,6 +54,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
     /// assumes root has right child
     fn rotate_left(mut root: Box<Node<K, V>>) -> Box<Node<K, V>> {
         // takes ownership of root's right child
+        assert!(root.right_child.is_some());
         let mut right_of_root = root.right_child.take().unwrap();
         
         // root takes ownership of right_of_root's left child
@@ -61,6 +63,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         // right_of_root's left child takes ownership of root
         right_of_root.left_child = Some(root);
 
+        // TODO: possible error in how fix_tree_props is called
         Self::fix_tree_props(right_of_root.left_child.as_mut().unwrap());
         Self::fix_tree_props(&mut right_of_root);
         
@@ -70,6 +73,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
     /// assumes root has left child
     fn rotate_right(mut root: Box<Node<K, V>>) -> Box<Node<K, V>> {   
         // takes ownership of root's left child
+        assert!(root.left_child.is_some());
         let mut left_of_root = root.left_child.take().unwrap();
         
         // root takes ownership of left_of_root's right child
@@ -90,7 +94,9 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
             if Self::height(&left_of_root.left_child) > Self::height(&left_of_root.right_child) {
                 root = Self::rotate_right(root);
             } else {
-                root.left_child = Some(Self::rotate_left(root.left_child.unwrap()));
+                println!("parents: {} {}", Self::height(&root.right_child), Self::height(&root.left_child));
+                println!("children: {} {}", Self::height(&left_of_root.right_child), Self::height(&left_of_root.left_child));
+                root.left_child = Some(Self::rotate_left(root.left_child.take().unwrap()));
                 root = Self::rotate_right(root);
             }
         } else {
@@ -106,7 +112,8 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
             if Self::height(&right_of_root.right_child) > Self::height(&right_of_root.left_child) {
                 root = Self::rotate_left(root);
             } else {
-                root.right_child = Some(Self::rotate_right(root.right_child.unwrap())); 
+
+                root.right_child = Some(Self::rotate_right(root.right_child.take().unwrap())); 
                 root = Self::rotate_left(root)
             } 
         } else {
@@ -169,7 +176,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
 
     fn insert_recursive(root: Option<Box<Node<K, V>>>, node: Box<Node<K, V>>) -> (Option<Box<Node<K, V>>>, Option<V>) {
         if root.is_none() {
-            return (Some(node), None);
+            return (Some(Node::leaf(node.key, node.value).into()), None);
         }
         let mut root = root.unwrap();
         match node.key.cmp(root.key.borrow()) {
@@ -217,7 +224,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
                 let (updated_left, removed_entry) = 
                     Self::remove_entry_recursive(root.left_child.take(), key);
                 root.left_child = updated_left;
-                root = Self::rebalance_left(root);
+                root = Self::rebalance_right(root);
                 (Some(root), removed_entry)
             }
             Ordering::Equal => {
@@ -226,11 +233,13 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
                         (None, Some((root.key, root.value)))
                     }, // No children
 
-                    (Some(left_child), None) => {
+                    (Some(mut left_child), None) => {
+                        left_child = Self::rebalance_left(left_child);
                         (Some(left_child), Some((root.key, root.value)))
                     }, // Only left child
 
-                    (None, Some(right_child)) => {
+                    (None, Some(mut right_child)) => {
+                        right_child = Self::rebalance_right(right_child);
                         (Some(right_child), Some((root.key, root.value)))
                     }, // Only right child
                     
@@ -243,6 +252,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
                         std::mem::swap(&mut root.key, &mut successor_node.key);
                         root.left_child = Some(left_child);
                         root.right_child = right_with_successor_removed;
+                        root = Self::rebalance_left(root);
                         (Some(root), Some((successor_node.key, successor_node.value)))
                     }
                 }
@@ -251,7 +261,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
                 let (updated_right, removed_entry) = 
                     Self::remove_entry_recursive(root.right_child.take(), key);
                 root.right_child = updated_right;
-                root = Self::rebalance_right(root);
+                root = Self::rebalance_left(root);
                 (Some(root), removed_entry)
             },
         }
@@ -262,6 +272,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
             Some(left) => {
                 let (new_left, min_node) = Self::remove_min(left);
                 node.left_child = new_left;
+                Self::fix_tree_props(&mut node);
                 (Some(node), min_node)
             },
             None => {

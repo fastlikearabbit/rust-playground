@@ -126,7 +126,7 @@ fn performance2() {
     for _ in 0..count {
         let key = rng.gen();
         let value = rng.gen();
-        println!("{:?}", map);
+      //  println!("{:?}", map);
         match rng.gen_range(0usize..10) {
             0..=7 => {
                 assert_eq!(map.insert(key, value), hash_map.insert(key, value));
