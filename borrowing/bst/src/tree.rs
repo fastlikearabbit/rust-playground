@@ -93,8 +93,6 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
             if Self::height(&left_of_root.left_child) > Self::height(&left_of_root.right_child) {
                 root = Self::rotate_right(root);
             } else {
-                println!("parents: {} {}", Self::height(&root.right_child), Self::height(&root.left_child));
-                println!("children: {} {}", Self::height(&left_of_root.right_child), Self::height(&left_of_root.left_child));
                 root.left_child = Some(Self::rotate_left(root.left_child.take().unwrap()));
                 root = Self::rotate_right(root);
             }
