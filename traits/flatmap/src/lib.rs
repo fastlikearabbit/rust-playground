@@ -30,8 +30,16 @@ impl<K: Ord, V> FlatMap<K, V> {
     }
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
-        // TODO: your code goes here.
-        unimplemented!()
+        let mut previous_value: Option<V> = None;
+//        self.0.insert(first_greater, (key, value))
+        let id = self.0.partition_point(|(k, _)| k < key.borrow());
+
+        if id == self.len() {
+            self.0.push((key, value));
+        } else if self.0[id].0 == key {
+            todo!()
+        }
+        None
     }
 
     pub fn get<Q>(&self, key: &Q) -> Option<&V>
@@ -39,7 +47,10 @@ impl<K: Ord, V> FlatMap<K, V> {
         K: Borrow<Q>,
         Q: Ord + ?Sized,
     {
-        todo!()
+        match self.0.binary_search_by_key(&key, |(k, _)| k.borrow()) {
+            Ok(id) => Some(&self.0[id].1),
+            Err(_) => None,
+        }
     }
 
     pub fn remove<Q>(&mut self, key: &Q) -> Option<V>
@@ -47,7 +58,7 @@ impl<K: Ord, V> FlatMap<K, V> {
         K: Borrow<Q>,
         Q: Ord + ?Sized,
     {
-        todo!()
+       self.remove_entry(key).map(|(_, v)| v)
     }
 
     pub fn remove_entry<Q>(&mut self, key: &Q) -> Option<(K, V)>
@@ -55,7 +66,10 @@ impl<K: Ord, V> FlatMap<K, V> {
     K: Borrow<Q>,
     Q: Ord + ?Sized,
     {
-        todo!()
+        match self.0.binary_search_by_key(&key, |(k, _)| k.borrow()) {
+            Ok(id) => Some(self.0.remove(id)),
+            Err(_) => None,
+        }
     }
 }
 
