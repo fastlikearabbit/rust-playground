@@ -51,7 +51,7 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         root.size = 1 + left_size + right_size;
     }
 
-    /// assumes root has right child
+    /// Assumes root has right child
     fn rotate_left(mut root: Box<Node<K, V>>) -> Box<Node<K, V>> {
         // takes ownership of root's right child
         assert!(root.right_child.is_some());
@@ -63,14 +63,13 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         // right_of_root's left child takes ownership of root
         right_of_root.left_child = Some(root);
 
-        // TODO: possible error in how fix_tree_props is called
         Self::fix_tree_props(right_of_root.left_child.as_mut().unwrap());
         Self::fix_tree_props(&mut right_of_root);
         
         right_of_root
     }
 
-    /// assumes root has left child
+    /// Assumes root has left child
     fn rotate_right(mut root: Box<Node<K, V>>) -> Box<Node<K, V>> {   
         // takes ownership of root's left child
         assert!(root.left_child.is_some());
@@ -210,7 +209,6 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
         previous_value
     }
 
-    // TODO: remove has bug related to rebalancing (call unwrap on None)
     fn remove_entry_recursive<Q>(root: Option<Box<Node<K, V>>>, key: &Q) -> (Option<Box<Node<K, V>>>, Option<(K, V)>)
     where
         K: Borrow<Q>,

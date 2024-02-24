@@ -54,10 +54,7 @@ impl<T> PStack<T> {
     pub fn push(&self, value: T) -> Self {
        let new_element = PRef {
             data: Rc::new(value),
-            prev: match &self.top {
-                Some(top) => Some(*top.to_owned()),
-                None => None,
-            }
+            prev: self.clone().top,
         };
         
         Self {
@@ -68,7 +65,16 @@ impl<T> PStack<T> {
     }
 
     pub fn pop(&self) -> Option<(PRef<T>, Self)> {
-        todo!();
+        let cloned = self.clone();
+        match cloned.top {
+            Some(top) => {
+                Some((*top, Self {
+                    top: self.top.unwrap().prev,
+                    size: self.size - 1,
+                }))
+            },
+            None => None,
+        }
     }
 
     pub fn len(&self) -> usize {
