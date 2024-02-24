@@ -63,46 +63,56 @@ impl<K: Ord, V> FlatMap<K, V> {
 
 impl<K, Q, V> Index<&Q> for FlatMap<K, V>
 where
+    K: Borrow<Q> + Ord,
     Q: Ord + ?Sized,
 {
     type Output = V;
 
     fn index(&self, index: &Q) -> &Self::Output {
-        todo!()
+        match self.get(index) {
+            Some(value) => value,
+            None => panic!("Index out of bounds"),
+        }
     }
 }
 
-impl<K, V> Extend<(K, V)> for FlatMap<K, V> {
+impl<K: Ord, V> Extend<(K, V)> for FlatMap<K, V> {
     fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
         todo!()
     }
 }
 
-impl<K, V> From<Vec<(K, V)>> for FlatMap<K, V> {
+impl<K: Ord, V> From<Vec<(K, V)>> for FlatMap<K, V> {
     fn from(value: Vec<(K, V)>) -> Self {
-        todo!()
+        todo!();
     }
 }
 
-impl<K, V> From<FlatMap<K, V>> for Vec<(K, V)> {
+impl<K: Ord, V> From<FlatMap<K, V>> for Vec<(K, V)> {
     fn from(value: FlatMap<K, V>) -> Self {
-        todo!()
+        value.0
     }
 }
 
-impl<K, V> FromIterator<(K, V)> for FlatMap<K, V> {
+impl<K: Ord, V> FromIterator<(K, V)> for FlatMap<K, V> {
     fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
-        todo!()
+        let mut flat_map = FlatMap::new();
+
+        for (key, val) in iter {
+            flat_map.insert(key, val);
+        }
+
+        flat_map
     }
 }
 
-impl<K, V> IntoIterator for FlatMap<K, V> {
+impl<K: Ord, V> IntoIterator for FlatMap<K, V> {
     type Item = (K, V);
 
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        todo!()
+        self.0.into_iter()
     }
 }
 
