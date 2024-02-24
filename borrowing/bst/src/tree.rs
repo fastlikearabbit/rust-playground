@@ -229,13 +229,11 @@ impl<K: Ord, V> AVLTreeMap<K, V> {
                         (None, Some((root.key, root.value)))
                     }, // No children
 
-                    (Some(mut left_child), None) => {
-                        left_child = Self::rebalance_left(left_child);
+                    (Some(left_child), None) => {
                         (Some(left_child), Some((root.key, root.value)))
                     }, // Only left child
 
-                    (None, Some(mut right_child)) => {
-                        right_child = Self::rebalance_right(right_child);
+                    (None, Some(right_child)) => {
                         (Some(right_child), Some((root.key, root.value)))
                     }, // Only right child
                     
