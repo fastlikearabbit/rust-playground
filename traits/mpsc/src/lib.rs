@@ -5,7 +5,9 @@ use thiserror::Error;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO: your code goes here.
+pub struct Buffer<T> {
+    buf: Rc<RefCell<VecDeque<T>>>,
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -16,6 +18,7 @@ pub struct SendError<T> {
 }
 
 pub struct Sender<T> {
+    data: T,
     // TODO: your code goes here.
 }
 
@@ -61,6 +64,7 @@ pub enum ReceiveError {
 }
 
 pub struct Receiver<T> {
+    data: T,
     // TODO: your code goes here.
 }
 
