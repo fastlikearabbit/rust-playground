@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //use core::slice::SlicePattern;
-use std::{borrow::Borrow, collections::BTreeSet, iter::FromIterator, ops::Index};
+use std::{borrow::Borrow, iter::FromIterator, ops::Index};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,16 +30,18 @@ impl<K: Ord, V> FlatMap<K, V> {
     }
 
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
-        let mut previous_value: Option<V> = None;
-//        self.0.insert(first_greater, (key, value))
+        let mut previous_value = None;
         let id = self.0.partition_point(|(k, _)| k < key.borrow());
 
         if id == self.len() {
             self.0.push((key, value));
         } else if self.0[id].0 == key {
-            todo!()
+            previous_value = Some(std::mem::replace(&mut self.0[id], (key, value)));
+        } else {
+            self.0.insert(id, (key, value));
         }
-        None
+
+        previous_value.map(|(_, v)| v)
     }
 
     pub fn get<Q>(&self, key: &Q) -> Option<&V>
@@ -92,8 +94,8 @@ where
 
 impl<K: Ord, V> Extend<(K, V)> for FlatMap<K, V> {
     fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
-        for item in iter {
-            self.0.push(item)
+        for (key, value) in iter {
+            self.insert(key, value);
         }
     }
 }
