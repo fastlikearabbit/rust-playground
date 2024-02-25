@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //use core::slice::SlicePattern;
-use std::{borrow::Borrow, iter::FromIterator, ops::Index};
+use std::{borrow::Borrow, collections::BTreeSet, iter::FromIterator, ops::Index};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -97,8 +97,18 @@ impl<K: Ord, V> Extend<(K, V)> for FlatMap<K, V> {
 }
 
 impl<K: Ord, V> From<Vec<(K, V)>> for FlatMap<K, V> {
-    fn from(value: Vec<(K, V)>) -> Self {
-        todo!();
+    fn from(mut value: Vec<(K, V)>) -> Self {
+        value.sort_by(|first, second| first.0.cmp(&second.0));
+        let mut result: Vec<(K, V)> = Vec::new();
+        for (k, v) in value.into_iter().rev() {
+            if let Some(key) = result.last() {
+                if key.0.cmp(&k) == std::cmp::Ordering::Equal { continue; } 
+            }
+            result.push((k, v));
+
+        }
+        result.reverse();
+        Self(result)
     }
 }
 
