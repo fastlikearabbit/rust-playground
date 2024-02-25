@@ -92,7 +92,9 @@ where
 
 impl<K: Ord, V> Extend<(K, V)> for FlatMap<K, V> {
     fn extend<T: IntoIterator<Item = (K, V)>>(&mut self, iter: T) {
-        todo!()
+        for item in iter {
+            self.0.push(item)
+        }
     }
 }
 
