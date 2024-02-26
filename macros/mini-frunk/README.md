@@ -7,7 +7,7 @@ In this problem, you'll implement the small part of the [`frunk`](https://crates
 Imagine you're processing JSONs in your service. Eventually, you'll want to transform one JSON into another. The only alternative we currently heard of is the `serde` crate, which enables us to serialize and deserialize types.
 
 ```json
-}
+{
     "user_id": "john_doe",
     "items": ["salad", "juice", "beer", "fork"],
     "version": 0,
