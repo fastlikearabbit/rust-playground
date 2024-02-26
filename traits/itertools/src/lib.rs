@@ -4,13 +4,29 @@ pub struct LazyCycle<I>
 where
     I: Iterator,
 {
-    // TODO: your code goes here.
+    iter: I,
+}
+
+impl<I: Iterator> Iterator for LazyCycle<I> {
+    type Item = <I as Iterator>::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!()
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct Extract<I: Iterator> {
-    // TODO: your code goes here.
+    iter: I,
+}
+
+impl<I: Iterator> Iterator for Extract<I> {
+    type Item = <I as Iterator>::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!()
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,9 +36,20 @@ where
     I: Iterator,
     I::Item: Clone,
 {
-    // TODO: your code goes here.
+    iter: I,
 }
 
+impl<I> Iterator for Tee<I>
+where
+    I: Iterator,
+    I::Item: Clone,
+{
+    type Item = <I as Iterator>::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!()
+    }
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct GroupBy<I, F, V>
@@ -31,7 +58,22 @@ where
     F: FnMut(&I::Item) -> V,
     V: Eq,
 {
-    // TODO: your code goes here.
+    iter: I,
+    f: F,
+    value: V,
+}
+
+impl<I, F, V> Iterator for GroupBy<I, F, V>
+where
+    I: Iterator,
+    F: FnMut(&I::Item) -> V,
+    V: Eq,
+{
+    type Item = (V, std::vec::IntoIter<I::Item>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!()
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,6 +85,7 @@ pub trait ExtendedIterator: Iterator {
         Self::Item: Clone,
     {
         // TODO: your code goes here.
+        // use .by_ref() to take the iterator by &mut  
         unimplemented!()
     }
 
@@ -74,4 +117,4 @@ pub trait ExtendedIterator: Iterator {
     }
 }
 
-// TODO: your code goes here.
+impl<I: Iterator> ExtendedIterator for I { }
