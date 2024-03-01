@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 use std::io::{self, BufRead};
-use byteorder::{ReadBytesExt, LittleEndian};
+use byteorder::ReadBytesExt;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -13,11 +13,15 @@ pub struct BitSequence {
 
 impl BitSequence {
     pub fn new(bits: u16, len: u8) -> Self {
-        // NB: make sure to zero unused bits so that Eq and Hash work as expected.
-        Self {
-            bits,
-            len,
+        assert!(len <= 16);
+        if len == 0 {
+            return Self {
+                bits: 0,
+                len: 0,
+            }
         }
+        let bits = (bits << (16 - len)) >> (16 - len);
+        Self { bits, len }
     }
 
     pub fn bits(&self) -> u16 {
@@ -29,52 +33,66 @@ impl BitSequence {
     }
 
     pub fn concat(self, other: Self) -> Self {
-        Self {
-            bits: (self.bits << self.len) + other.bits,
+        assert!(self.len + other.len <= 16);
+
+        let shifted_bits = self.bits << other.len;
+        let new_bits = shifted_bits | (other.bits & ((1 << other.len) - 1));
+
+        BitSequence {
+            bits: new_bits,
             len: self.len + other.len,
         }
     }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct BitReader<T> {
     stream: T,
-    unread_bits: u8,
-    len_unread: u8,
+    buffer: u8,
+    bits_left: u8,
 }
 
 impl<T: BufRead> BitReader<T> {
     pub fn new(stream: T) -> Self {
         Self {
             stream,
-            unread_bits: 0,
-            len_unread: 0,
+            buffer: 0,
+            bits_left: 0,
         }
     }
 
-    pub fn read_bits(&mut self, mut len: u8) -> io::Result<BitSequence> {
-        if self.len_unread >= len {
-            self.len_unread -= len;
-            let wanted_bits = self.unread_bits & !(0xFF << len);
-            self.unread_bits >>= len;
-            return Ok(BitSequence::new(wanted_bits as u16, len));
+    pub fn read_bits(&mut self, len: u8) -> io::Result<BitSequence> {
+        let mut result_sequence = BitSequence::new(0, 0);
+        let mut bits_to_read = len;
+
+        while bits_to_read > 0 {
+            if self.bits_left == 0 {
+                self.buffer = self.stream.read_u8()?;
+                self.bits_left = 8;
+            }
+
+            let read_len = std::cmp::min(self.bits_left, bits_to_read);
+            
+            let mask = ((1 << read_len) - 1) as u8;
+            let bits = (self.buffer >> (8 - read_len)) & mask;
+            let current_sequence = BitSequence::new(bits as u16, read_len);
+
+            result_sequence = result_sequence.concat(current_sequence);
+
+            if read_len != 8 { self.buffer <<= read_len; }
+            self.bits_left -= read_len;
+            bits_to_read -= read_len;
         }
 
-        match self.stream.read_u8() {
-            Ok(byte) => {
-                // TODO: use concat from above
-
-                todo!()
-            },
-            Err(err) => Err(err)
-        }
+        Ok(result_sequence)
     }
 
     /// Discard all the unread bits in the current byte and return a mutable reference
     /// to the underlying reader.
     pub fn borrow_reader_from_boundary(&mut self) -> &mut T {
-        self.unread_bits = 0;
+        self.bits_left = 0;
         &mut self.stream
     }
 }
@@ -88,7 +106,7 @@ mod tests {
 
     #[test]
     fn read_bits() -> io::Result<()> {
-        let data: &[u8] = &[0b01100011, 0b11011011, 0b10101111];
+        let data: &[u8] = &[0b10110011, 0b01101100, 0b10111110];
         let mut reader = BitReader::new(data);
         assert_eq!(reader.read_bits(1)?, BitSequence::new(0b1, 1));
         assert_eq!(reader.read_bits(2)?, BitSequence::new(0b01, 2));
