@@ -13,23 +13,25 @@ pub struct BitSequence {
 impl BitSequence {
     pub fn new(bits: u16, len: u8) -> Self {
         // NB: make sure to zero unused bits so that Eq and Hash work as expected.
-        // TODO: your code goes here.
-        unimplemented!()
+        Self {
+            bits,
+            len,
+        }
     }
 
     pub fn bits(&self) -> u16 {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.bits
     }
 
     pub fn len(&self) -> u8 {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.len
     }
 
     pub fn concat(self, other: Self) -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        Self {
+            bits: self.bits << 8 + other.bits,
+            len: self.len + other.len,
+        }
     }
 }
 
