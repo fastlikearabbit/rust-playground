@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
 use std::io::{self, BufRead};
+use byteorder::{ReadBytesExt, LittleEndian};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +30,7 @@ impl BitSequence {
 
     pub fn concat(self, other: Self) -> Self {
         Self {
-            bits: self.bits << 8 + other.bits,
+            bits: (self.bits << self.len) + other.bits,
             len: self.len + other.len,
         }
     }
@@ -39,25 +40,42 @@ impl BitSequence {
 
 pub struct BitReader<T> {
     stream: T,
-    // TODO: your code goes here.
+    unread_bits: u8,
+    len_unread: u8,
 }
 
 impl<T: BufRead> BitReader<T> {
     pub fn new(stream: T) -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        Self {
+            stream,
+            unread_bits: 0,
+            len_unread: 0,
+        }
     }
 
     pub fn read_bits(&mut self, mut len: u8) -> io::Result<BitSequence> {
-        // TODO: your code goes here.
-        unimplemented!()
+        if self.len_unread >= len {
+            self.len_unread -= len;
+            let wanted_bits = self.unread_bits & !(0xFF << len);
+            self.unread_bits >>= len;
+            return Ok(BitSequence::new(wanted_bits as u16, len));
+        }
+
+        match self.stream.read_u8() {
+            Ok(byte) => {
+                // TODO: use concat from above
+
+                todo!()
+            },
+            Err(err) => Err(err)
+        }
     }
 
     /// Discard all the unread bits in the current byte and return a mutable reference
     /// to the underlying reader.
     pub fn borrow_reader_from_boundary(&mut self) -> &mut T {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.unread_bits = 0;
+        &mut self.stream
     }
 }
 
