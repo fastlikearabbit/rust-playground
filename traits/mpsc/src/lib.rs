@@ -1,12 +1,44 @@
 #![forbid(unsafe_code)]
 
-use std::{cell::RefCell, collections::VecDeque, fmt::Debug, rc::Rc};
+use std::{borrow::Borrow, cell::RefCell, collections::VecDeque, fmt::Debug, rc::Rc};
 use thiserror::Error;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub struct Buffer<T> {
-    buf: Rc<RefCell<VecDeque<T>>>,
+pub struct TaskQueue<T> {
+    queue: Rc<RefCell<VecDeque<T>>>,
+    producers: usize,
+}
+
+impl<T> TaskQueue<T> {
+    pub fn new() -> Self {
+        // TODO: set producers to something different
+        Self {
+            queue: Rc::new(RefCell::new(VecDeque::new())),
+            producers: 0,
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.queue.as_ref().borrow().is_empty()
+    }
+
+    pub fn is_closed(&self) -> bool {
+        self.producers == 0
+    }
+
+    pub fn put(&mut self, value: T) {
+        self.queue.borrow_mut().push_back(value);
+    }
+
+    /// Only called when queue is not empty
+    pub fn get(&mut self) -> T {
+        self.queue.borrow_mut().pop_front().unwrap_or_else(|| panic!("get() called on empty queue"))
+    }
+
+    pub fn add_producer(&mut self) {
+        self.producers += 1;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -18,31 +50,29 @@ pub struct SendError<T> {
 }
 
 pub struct Sender<T> {
-    data: T,
-    // TODO: your code goes here.
+    task_queue: TaskQueue<T>,
+    channel_id: usize,
 }
 
 impl<T> Sender<T> {
     pub fn send(&self, value: T) -> Result<(), SendError<T>> {
-        // TODO: your code goes here.
-        unimplemented!()
+        if self.task_queue.is_closed() { return Err(SendError {value }); }
+        self.task_queue.queue.borrow_mut().push_back(value);
+        Ok(())
     }
 
     pub fn is_closed(&self) -> bool {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.task_queue.is_closed()
     }
 
     pub fn same_channel(&self, other: &Self) -> bool {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.channel_id == other.channel_id
     }
 }
 
 impl<T> Clone for Sender<T> {
     fn clone(&self) -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        todo!()
     }
 }
 
@@ -64,14 +94,15 @@ pub enum ReceiveError {
 }
 
 pub struct Receiver<T> {
-    data: T,
-    // TODO: your code goes here.
+    task_queue: TaskQueue<T>,
 }
 
 impl<T> Receiver<T> {
     pub fn recv(&mut self) -> Result<T, ReceiveError> {
-        // TODO: your code goes here.
-        unimplemented!()
+        if self.task_queue.is_closed() { return Err(ReceiveError::Closed); }
+        if self.task_queue.is_empty() { return Err(ReceiveError::Empty); }
+
+        Ok(self.task_queue.queue.borrow_mut().pop_front().unwrap())
     }
 
     pub fn close(&mut self) {
