@@ -7,7 +7,7 @@ use syn::{parse_macro_input, Data, DeriveInput, FieldsNamed, Ident, Type};
 
 pub fn impl_labelled(input: TokenStream) -> TokenStream {
     // TODO: your code goes here.
-    unimplemented!()
+    todo!()
 }
 
 // TODO: your code goes here.

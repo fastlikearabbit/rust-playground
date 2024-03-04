@@ -5,7 +5,7 @@ use syn::{parse_macro_input, Data, DeriveInput, FieldsNamed, Ident, Type};
 
 pub fn impl_generic(input: TokenStream) -> TokenStream {
     // TODO: your code goes here.
-    unimplemented!()
+    todo!()
 }
 
 // TODO: your code goes here.

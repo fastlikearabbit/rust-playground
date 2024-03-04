@@ -1,5 +1,5 @@
-use mini_frunk::hlist::{HCons, HNil};
-use mini_frunk::{hlist, hlist_pat, HList};
+use mini_frunk_core::hlist::{HCons, HNil};
+use mini_frunk_core::{hlist, hlist_pat, HList};
 use static_assertions::assert_type_eq_all as assert_type_eq;
 
 #[test]
@@ -31,6 +31,7 @@ fn hlist_macro() {
 #[test]
 fn hlist_pat_macro() {
     let h: HList!(&str, &str, i32, bool) = hlist!["Joe", "Blow", 30, true];
+  //  let HCons {head: f, tail: HCons {head: l, tail: HCons {head: a, tail: HCons {head: is, tail: HNil}}}} = h;
     let hlist_pat!(f_name, l_name, age, is_admin) = h;
     assert_eq!(f_name, "Joe");
     assert_eq!(l_name, "Blow");

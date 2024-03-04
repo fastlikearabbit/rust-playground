@@ -6,19 +6,17 @@ pub trait Generic {
     fn from(repr: Self::Repr) -> Self;
 }
 
-fn generic<Dst, Repr>(repr: Repr) -> Dst 
-where
-    Dst: Generic<Repr = Repr>,
+pub fn from_generic<Dst, Repr>(repr: Repr) -> Dst 
 { 
     todo!()
 }
-fn into_generic<Src, Repr>(src: Src) -> Repr
-where
-    Src: Generic<Repr = Repr>
+
+pub fn into_generic<Src, Repr>(src: Src) -> Repr
 { 
     todo!()
 }
-fn convert_from<Src, Dst, Repr>(src: Src) -> Dst
+
+pub fn convert_from<Src, Dst, Repr>(src: Src) -> Dst
 where
     Src: Generic<Repr = Repr>,
     Dst: Generic<Repr = Repr>,
