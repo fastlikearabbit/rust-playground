@@ -39,8 +39,8 @@ macro_rules! HList {
         HCons<$t, HNil>
     };
 
-    ($front: ty, $($rest:ty),+) => {
-        HCons<$front, HList!($($rest),+)>
+    ($front: ty, $($rest:ty),*) => {
+        HCons<$front, HList!($($rest),*)>
     };
 }
 
