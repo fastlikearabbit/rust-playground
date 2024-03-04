@@ -1,6 +1,9 @@
 #![forbid(unsafe_code)]
+
+#[derive(PartialEq, Eq, Debug)]
 pub struct HNil;
 
+#[derive(PartialEq, Eq, Debug)]
 pub struct HCons<H, T> {
     pub head: H,
     pub tail: T,
@@ -29,7 +32,7 @@ impl<H, T> HCons<H, T> {
 #[macro_export]
 macro_rules! HList {
     () => {
-        HNil::new()
+        HNil
     };
 
     ($t:ty) => {
@@ -44,7 +47,7 @@ macro_rules! HList {
 #[macro_export]
 macro_rules! hlist {
     () => {
-        HNil::new()
+        HNil
     };
 
     ($e:expr) => {
@@ -58,7 +61,15 @@ macro_rules! hlist {
 
 #[macro_export]
 macro_rules! hlist_pat {
-    ($($i: ident),*) => {
-        ($($i),*)
+    () => {
+        HNil
+    };
+
+    ($i:ident) => {
+        HCons {head: $i, tail: HNil}
+    };
+
+    ($front: ident, $($rest:ident),+) => {
+        HCons {head: $front, tail: hlist_pat!($($rest),+)}
     };
 }
