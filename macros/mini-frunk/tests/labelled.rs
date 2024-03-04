@@ -12,16 +12,16 @@
 //         field!((l, a, s, t, __, n, a, m, e), "Drumpty"),
 //         field!((a, g, e), 3),
 //     ];
-//     let person: Person = from_labelled_generic(hlist);
-//     assert_eq!(
-//         person,
-//         Person {
-//             first_name: "Humpty",
-//             last_name: "Drumpty",
-//             age: 3,
-//         }
-//     );
-// }
+    // let person: Person = from_labelled_generic(hlist);
+    // assert_eq!(
+    //     person,
+    //     Person {
+    //         first_name: "Humpty",
+    //         last_name: "Drumpty",
+    //         age: 3,
+    //     }
+    // );
+//}
 
 // #[test]
 // fn struct_into_labelled_generic() {

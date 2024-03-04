@@ -1,6 +1,5 @@
 use mini_frunk_core::{ hlist::HCons, hlist::HNil, HList, hlist, hlist_pat };
-use mini_frunk_core::generic::Generic;
-use mini_frunk_derive::Generic;
+use mini_frunk_derive::{ Generic, LabelledGeneric };
 
 #[derive(Generic, Debug, Clone, PartialEq)]
 pub struct Person<'a> {

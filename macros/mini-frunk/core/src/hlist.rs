@@ -32,44 +32,56 @@ impl<H, T> HCons<H, T> {
 #[macro_export]
 macro_rules! HList {
     () => {
-        HNil
+        $crate::hlist::HNil
     };
 
     ($t:ty) => {
-        HCons<$t, HNil>
+        $crate::hlist::HCons<$t, HNil>
     };
 
-    ($front: ty, $($rest:ty),*) => {
-        HCons<$front, HList!($($rest),*)>
+    ($front: ty, $($rest:ty),+) => {
+        $crate::hlist::HCons<$front, $crate::HList![ $($rest),+ ]>
     };
 }
 
 #[macro_export]
 macro_rules! hlist {
     () => {
-        HNil
+        $crate::hlist::HNil
     };
 
     ($e:expr) => {
-        HCons::new($e, HNil)
+        $crate::hlist::HCons {
+            head: $e,
+            tail: $crate::hlist::HNil,
+        }
     };
 
     ($front: expr, $($rest:expr),+) => {
-        HCons::new($front, hlist!($($rest),+))
+        $crate::hlist::HCons { 
+            head: $front,
+            tail: $crate::hlist!($($rest),+) 
+        }
     };
 }
 
 #[macro_export]
 macro_rules! hlist_pat {
     () => {
-        HNil
+        $crate::hlist::HNil
     };
 
     ($i:ident) => {
-        HCons {head: $i, tail: HNil}
+        $crate::hlist::HCons {
+            head: $i,
+            tail: $crate::hlist::HNil
+        }
     };
 
     ($front: ident, $($rest:ident),+) => {
-        HCons {head: $front, tail: hlist_pat!($($rest),+)}
+        $crate::hlist::HCons {
+            head: $front, 
+            tail: $crate::hlist_pat!($($rest),+)
+        }
     };
 }

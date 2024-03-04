@@ -2,9 +2,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
 
-use mini_frunk_core::{hlist, hlist_pat, HList};
-use mini_frunk_core::generic::Generic;
-
 pub fn impl_generic(ast: syn::DeriveInput) -> TokenStream {
     let struct_ = match ast.data {
                         syn::Data::Struct(struct_) => struct_,
@@ -30,7 +27,7 @@ pub fn impl_generic(ast: syn::DeriveInput) -> TokenStream {
     };
 
     let impl_block = quote! {
-        impl #impl_generics Generic for #name #ty_generics #where_clause {
+        impl #impl_generics ::mini_frunk_core::generic::Generic for #name #ty_generics #where_clause {
             type Repr = HList!( #field_types );
 
             fn into(self) -> Self::Repr {
