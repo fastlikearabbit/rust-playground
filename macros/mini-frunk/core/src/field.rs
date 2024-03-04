@@ -21,22 +21,28 @@ pub mod symbols {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-
-#[macro_export]
-macro_rules! field {
-    ($lit: literal, $value: expr) => {
-        { Field {name_type_holder: std::marker::PhantomData, value: $value } }
-    };
-
-    (($($c: literal),*), $value: expr) => {
-        { Field {name_type_holder: std::marker::PhantomData, value: $value } }
-    };
-}
-
 pub struct Field<N, T> {
     pub name_type_holder: std::marker::PhantomData<N>,
     pub value: T,
 }
+
+#[macro_export]
+macro_rules! field {
+    ($i: ident, $value: expr) => {{ 
+        $crate::field::Field {
+            name_type_holder: std::marker::PhantomData, 
+            value: $value 
+        } 
+    }};
+
+    (($($i: ident),+), $value: expr) => {{ 
+
+        $crate::field::Field::<($($i),+), _> {
+            name_type_holder: std::marker::PhantomData, 
+            value: $value 
+        }
+    }};
+}
+
 
 

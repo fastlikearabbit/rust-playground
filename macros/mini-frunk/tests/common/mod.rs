@@ -1,7 +1,7 @@
 use mini_frunk_core::{ hlist::HCons, hlist::HNil, HList, hlist, hlist_pat };
 use mini_frunk_derive::{ Generic, LabelledGeneric };
 
-#[derive(Generic, Debug, Clone, PartialEq)]
+#[derive(Generic, LabelledGeneric, Debug, Clone, PartialEq)]
 pub struct Person<'a> {
     pub first_name: &'a str,
     pub last_name: &'a str,
