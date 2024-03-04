@@ -5,14 +5,23 @@ pub trait LabelledGeneric {
     fn from(repr: Self::Repr) -> Self;
 }
 
-pub fn from_labelled_generic<Dst, Repr>(repr: Repr) -> Dst {
-    todo!()
+pub fn from_labelled_generic<Dst, R>(repr: R) -> Dst
+where
+    Dst: LabelledGeneric<Repr = R>,
+{
+    LabelledGeneric::from(repr)
 }
-pub fn into_labelled_generic<Src, Repr>(src: Src) -> Repr {
-    todo!()
-}
-pub fn labelled_convert_from<Src, Dst, Repr>(src: Src) -> Dst {
-    todo!()
+pub fn into_labelled_generic<Src, R>(src: Src) -> R
+where
+    Src: LabelledGeneric<Repr = R>,
+{
+    src.into()
 }
 
-// TODO: your code goes here.
+pub fn labelled_convert_from<Src, Dst, R>(src: Src) -> Dst
+where
+    Src: LabelledGeneric<Repr = R>,
+    Dst: LabelledGeneric<Repr = R>,
+{
+    LabelledGeneric::from(src.into())
+}
