@@ -1,4 +1,7 @@
 #![forbid(unsafe_code)]
+
+use crate::labelled::LabelledGeneric;
+use crate::hlist::{ HCons, HNil };
 pub enum Here {}
 pub struct There<T>(std::marker::PhantomData<T>);
 
@@ -7,7 +10,32 @@ pub trait Plucker<Target, Indices> {
     fn pluck(self) -> (Target, Self::Remainder);
 }
 
-// TODO: your code goes here.
+impl<Tail, Target> Plucker<Target, Here> for HCons<Target, Tail>
+{
+    type Remainder = Tail;
+
+    fn pluck(self) -> (Target, Self::Remainder) {
+        (self.head, self.tail)
+    }
+}
+
+impl<Head, Tail, Target, TailIndices> Plucker<Target, There<TailIndices>> for HCons<Head, Tail>
+where
+    Tail: Plucker<Target, TailIndices>
+{
+    type Remainder = HCons<Head, <Tail as Plucker<Target, TailIndices>>::Remainder>;
+
+    fn pluck(self) -> (Target, Self::Remainder) {
+        let (target, remainder)= Tail::pluck(self.tail);
+        (
+            target,
+            HCons {
+                head: self.head,
+                tail: remainder,
+            }
+        )
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -16,7 +44,36 @@ pub trait Sculptor<Target, Indices> {
     fn sculpt(self) -> (Target, Self::Remainder);
 }
 
-// TODO: your code goes here.
+impl<Head, Tail> Sculptor<HNil, HNil> for HCons<Head, Tail> {
+    type Remainder = HCons<Head, Tail>;
+
+    fn sculpt(self) -> (HNil, Self::Remainder) {
+        (HNil, self)
+    }
+}
+
+impl<SrcHead, SrcTail, DstHead, DstTail, HeadIndices, TailIndices> 
+    Sculptor<HCons<DstHead, DstTail>, HCons<HeadIndices, TailIndices>> for HCons<SrcHead, SrcTail>
+where
+    HCons<SrcHead, SrcTail> : Plucker<DstHead, HeadIndices>,
+    <HCons<SrcHead, SrcTail> as Plucker<DstHead, HeadIndices>>::Remainder : Sculptor<DstTail, TailIndices>,
+{
+    type Remainder = <<HCons<SrcHead, SrcTail> as Plucker<DstHead, HeadIndices>>::Remainder 
+        as Sculptor<DstTail, TailIndices>>::Remainder;
+        
+    fn sculpt(self) -> (HCons<DstHead, DstTail>, Self::Remainder) {
+        let (h, r): (DstHead, <HCons<SrcHead, SrcTail> as Plucker<DstHead, HeadIndices>>::Remainder) = self.pluck();
+        let (tail, remainder): (DstTail, Self::Remainder) = r.sculpt();
+        (
+            HCons {
+                head: h,
+                tail,
+            },
+            remainder
+        )
+
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -24,10 +81,24 @@ pub trait Transmogrifier<Dst, Indices> {
     fn transmogrify(self) -> Dst;
 }
 
-// TODO: your code goes here.
+impl<Dst, Indices, T: LabelledGeneric> Transmogrifier<Dst, Indices> for T 
+where   Dst: LabelledGeneric,
+        <T as LabelledGeneric>::Repr: Sculptor<<Dst as LabelledGeneric>::Repr, Indices> 
+{
+    fn transmogrify(self) -> Dst {
+        transmogrify_from(self)
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// fn transform_from<Src, Dst, Indices>(src: Src) -> Dst
-
-// TODO: your code goes here.
+pub fn transmogrify_from<Src, Dst, Indices>(src: Src) -> Dst
+    where Src: LabelledGeneric,
+          Dst: LabelledGeneric,
+          <Src as LabelledGeneric>::Repr: Sculptor<<Dst as LabelledGeneric>::Repr, Indices> 
+{
+    let src = Src::into(src);
+    let (dst, _) = src.sculpt();
+    LabelledGeneric::from(dst)
+}
