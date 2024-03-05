@@ -3,7 +3,8 @@ use core::panic;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Lifetime, PatReference};
+use syn::spanned::Spanned;
+
 
 pub fn impl_labelled(ast: syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
@@ -16,43 +17,52 @@ pub fn impl_labelled(ast: syn::DeriveInput) -> TokenStream {
         panic!("Not a struct with named fields.")
     };
 
-    let struct_ = match &ast.data {
-        syn::Data::Struct(struct_) => struct_,
-        _ => panic!("Only structs are accepted.")
-    };  
+    let custom_field_items = input_fields
+        .iter()
+        .map(|f| {
+            let as_string = f.ident.clone().unwrap().to_string();
+            let letters = as_string.chars().into_iter().map(|c| {
+                if c == '_' { 
+                    syn::Ident::new("__", f.span())
+                } else {
+                    syn::Ident::new(&c.to_string(), f.span()) 
+                }
+            })
+            .map(|ident| quote! { mini_frunk_core::field::symbols::#ident });
 
-    let field_names_iter = match &struct_.fields {
-        syn::Fields::Named(fields) => {
-            let names = fields.named.iter().map(|f| {
-                let name = f.ident.as_ref().unwrap();
-                quote! { #name }
-            });
-            quote! { #(#names),* }
-        },
+            let as_enum = quote! { #(#letters),* };    
+            let ty = f.ty.clone();
 
-        _ => panic!("balblablbla")
-    };
+            quote! { mini_frunk_core::field::Field<(#as_enum), #ty> }
+    });
 
-    let custom_field_items = input_fields.iter().map(|f| {
-            let name_as_iter = f.ident.clone().into_iter().map(|c| 
-            if c == syn::Ident::new("_", c.span()) { 
-                syn::Ident::new("__", c.span())
-            } else { c } );
-            let enum_based_name = quote! { #(#name_as_iter),* };
-            let lifetime = match f.ty.clone() {
-                syn::Type::Reference(ref_type) => ref_type.lifetime,
-                _ => None
-            };
-            let struct_lifetime = match lifetime {
-                Some(lt) => quote! { #lt, },
-                None => quote! { }
-            };
-            quote! { Field<#struct_lifetime #enum_based_name, #f.ty.clone()> }
-        }
-    );
+    let field_names_as_enums = input_fields
+        .iter()
+        .map(|f| {
+            let as_string = f.ident.clone().unwrap().to_string();
+            let letters = as_string.chars().into_iter().map(|c| {
+                if c == '_' { 
+                    syn::Ident::new("__", f.span())
+                } else {
+                    syn::Ident::new(&c.to_string(), f.span()) 
+                }
+            })
+            .map(|ident| quote! { mini_frunk_core::field::symbols::#ident });
 
-    let field_names = input_fields.iter().map(|f| quote! { #f.ident.clone() });
+            let as_enum = quote! { #(#letters),* };   
+            quote! { (#as_enum) }
+    });
+    let field_names = input_fields.iter().map(|f| {
+        let ident = f.ident.clone();
+        quote! { #ident }
+    });
     let field_names_cpy = field_names.clone();
+    let self_field_values = input_fields.iter().map(|f| {
+        let field_name = f.ident.clone().unwrap();
+        quote! { self.#field_name }
+    });
+
+    // println!("{:#?}", quote! {#(#field_names),*});
 
     let generics = ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
@@ -62,19 +72,16 @@ pub fn impl_labelled(ast: syn::DeriveInput) -> TokenStream {
                 type Repr = mini_frunk_core::HList![ #(#custom_field_items),* ];
 
                 fn into(self) -> Self::Repr {
-                    // hlist![
-                    //     quote! { #(field!(#field_names, self.#field_names)),* }
-                    // ]
-                    todo!()
+                    mini_frunk_core::hlist![
+                        #(mini_frunk_core::field!(#field_names_as_enums, #self_field_values)),*
+                    ]
                 }
 
                 fn from(repr: Self::Repr) -> Self {
-                    // let hlist_pat![ #field_names_iter ] = repr;
-                    // let comma_separated_list = #(#field_names_cpy: #field_names_cpy.value),*;
-                    // Self {
-                    //     quote! { comma_separated_list }
-                    // }
-                    todo!()
+                    let mini_frunk_core::hlist_pat![ #(#field_names),* ] = repr;
+                    Self {
+                        #(#field_names_cpy: #field_names_cpy.value),*
+                    }
                 }
         }
     };

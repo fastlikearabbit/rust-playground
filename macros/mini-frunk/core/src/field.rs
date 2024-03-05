@@ -21,6 +21,7 @@ pub mod symbols {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, PartialEq, Eq)]
 pub struct Field<N, T> {
     pub name_type_holder: std::marker::PhantomData<N>,
     pub value: T,
@@ -28,21 +29,12 @@ pub struct Field<N, T> {
 
 #[macro_export]
 macro_rules! field {
-    ($i: ident, $value: expr) => {{ 
-        $crate::field::Field {
-            name_type_holder: std::marker::PhantomData, 
-            value: $value 
-        } 
-    }};
-
-    (($($i: ident),+), $value: expr) => {{ 
+    (($($i: path),*), $value: expr) => {{ 
 
         $crate::field::Field::<($($i),+), _> {
             name_type_holder: std::marker::PhantomData, 
-            value: $value 
+            value: $value, 
         }
     }};
 }
-
-
 

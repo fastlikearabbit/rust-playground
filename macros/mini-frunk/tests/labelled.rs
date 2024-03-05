@@ -41,43 +41,43 @@ fn struct_into_labelled_generic() {
     );
 }
 
-// #[test]
-// fn strategist_to_president() {
-//     let strategist = Strategist {
-//         first_name: "Steve",
-//         last_name: "Cannon",
-//         age: 3,
-//     };
-//     let president: President = labelled_convert_from(strategist);
-//     assert_eq!(
-//         president,
-//         President {
-//             first_name: "Steve",
-//             last_name: "Cannon",
-//             age: 3,
-//         }
-//     )
-// }
+#[test]
+fn strategist_to_president() {
+    let strategist = Strategist {
+        first_name: "Steve",
+        last_name: "Cannon",
+        age: 3,
+    };
+    let president: President = labelled_convert_from(strategist);
+    assert_eq!(
+        president,
+        President {
+            first_name: "Steve",
+            last_name: "Cannon",
+            age: 3,
+        }
+    )
+}
 
-// #[test]
-// fn round_trip() {
-//     let strategist = Strategist {
-//         first_name: "Steve",
-//         last_name: "Cannon",
-//         age: 3,
-//     };
-//     let president: President = labelled_convert_from(strategist.clone());
-//     let beginning: Strategist = labelled_convert_from(president);
-//     assert_eq!(beginning, strategist)
-// }
+#[test]
+fn round_trip() {
+    let strategist = Strategist {
+        first_name: "Steve",
+        last_name: "Cannon",
+        age: 3,
+    };
+    let president: President = labelled_convert_from(strategist.clone());
+    let beginning: Strategist = labelled_convert_from(president);
+    assert_eq!(beginning, strategist)
+}
 
-// #[cfg(feature = "compilation-fail-labelled")]
-// #[test]
-// fn compilation_fail_labelled() {
-//     let person = Person {
-//         first_name: "Humpty",
-//         last_name: "Drumpty",
-//         age: 3,
-//     };
-//     let _jumbled_person: JumbledPerson = labelled_convert_from(person);
-// }
+#[cfg(feature = "compilation-fail-labelled")]
+#[test]
+fn compilation_fail_labelled() {
+    let person = Person {
+        first_name: "Humpty",
+        last_name: "Drumpty",
+        age: 3,
+    };
+    let _jumbled_person: JumbledPerson = labelled_convert_from(person);
+}

@@ -1,7 +1,4 @@
 #![forbid(unsafe_code)]
-use crate::hlist::{HCons, HNil};
-use crate::labelled::LabelledGeneric;
-
 pub enum Here {}
 pub struct There<T>(std::marker::PhantomData<T>);
 
