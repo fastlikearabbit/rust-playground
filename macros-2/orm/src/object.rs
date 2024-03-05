@@ -15,3 +15,7 @@ pub struct Schema {
 }
 
 // TODO: your code goes here.
+
+pub struct Store {
+    
+}

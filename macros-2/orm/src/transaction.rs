@@ -18,6 +18,7 @@ use std::{
 // TODO: your code goes here.
 pub struct Transaction<'a> {
     // TODO: your code goes here.
+    name: &'a str,
 }
 
 impl<'a> Transaction<'a> {
@@ -69,6 +70,7 @@ pub enum ObjectState {
 #[derive(Clone)]
 pub struct Tx<'a, T> {
     // TODO: your code goes here.
+    name: &'a T,
 }
 
 impl<'a, T: Any> Tx<'a, T> {

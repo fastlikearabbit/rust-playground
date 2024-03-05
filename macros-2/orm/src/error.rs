@@ -18,6 +18,20 @@ pub enum Error {
     Storage(#[source] Box<dyn std::error::Error>),
 }
 
+pub struct ErrorWithCtx<'a, T> {
+    // TODO: code goes here
+    _name: &'a T, 
+}
+
+#[derive(Default)]
+pub struct ErrorCtx {
+}
+
+impl<'a, T> ErrorWithCtx<'a, T> {
+    pub fn new(err: rusqlite::Error, def: ErrorCtx) -> Self {
+        todo!()
+    }
+}
 impl<'a> From<ErrorWithCtx<'a, rusqlite::Error>> for Error {
     fn from(err: ErrorWithCtx<rusqlite::Error>) -> Self {
         // TODO: your code goes here.
@@ -34,10 +48,16 @@ impl From<rusqlite::Error> for Error {
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Error, Debug)]
-#[error("object is not found: type '{type_name}', id {object_id}")]
+// #[error("object is not found: type '{type_name}', id {object_id}")]
 pub struct NotFoundError {
     pub object_id: ObjectId,
     pub type_name: &'static str,
+}
+
+impl std::fmt::Display for NotFoundError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
