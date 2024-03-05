@@ -23,23 +23,23 @@ fn person_from_labelled_generic() {
     );
 }
 
-// #[test]
-// fn struct_into_labelled_generic() {
-//     let person = Person {
-//         first_name: "Humpty",
-//         last_name: "Drumpty",
-//         age: 3,
-//     };
-//     let hlist = into_labelled_generic(person);
-//     assert_eq!(
-//         hlist,
-//         hlist![
-//             field!((f, i, r, s, t, __, n, a, m, e), "Humpty"),
-//             field!((l, a, s, t, __, n, a, m, e), "Drumpty"),
-//             field!((a, g, e), 3),
-//         ]
-//     );
-// }
+#[test]
+fn struct_into_labelled_generic() {
+    let person = Person {
+        first_name: "Humpty",
+        last_name: "Drumpty",
+        age: 3,
+    };
+    let hlist = into_labelled_generic(person);
+    assert_eq!(
+        hlist,
+        hlist![
+            field!((f, i, r, s, t, __, n, a, m, e), "Humpty"),
+            field!((l, a, s, t, __, n, a, m, e), "Drumpty"),
+            field!((a, g, e), 3)
+        ]
+    );
+}
 
 // #[test]
 // fn strategist_to_president() {

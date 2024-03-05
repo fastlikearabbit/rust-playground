@@ -28,15 +28,15 @@ pub fn impl_generic(ast: syn::DeriveInput) -> TokenStream {
 
     let impl_block = quote! {
         impl #impl_generics ::mini_frunk_core::generic::Generic for #name #ty_generics #where_clause {
-            type Repr = HList!( #field_types );
+            type Repr = mini_frunk_core::HList!( #field_types );
 
             fn into(self) -> Self::Repr {
                 let #name { #field_names } = self;
-                hlist! [ #field_names ]
+                mini_frunk_core::hlist! [ #field_names ]
             }
 
             fn from(repr: Self::Repr) -> Self {
-                let hlist_pat! [ #field_names ] = repr;
+                let mini_frunk_core::hlist_pat! [ #field_names ] = repr;
                 #name { #field_names }
             }
         }
@@ -44,5 +44,3 @@ pub fn impl_generic(ast: syn::DeriveInput) -> TokenStream {
 
     impl_block.into()
 }
-
-// TODO: your code goes here.

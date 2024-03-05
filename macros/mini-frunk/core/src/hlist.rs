@@ -36,7 +36,7 @@ macro_rules! HList {
     };
 
     ($t:ty) => {
-        $crate::hlist::HCons<$t, HNil>
+        $crate::hlist::HCons<$t, $crate::hlist::HNil>
     };
 
     ($front: ty, $($rest:ty),+) => {

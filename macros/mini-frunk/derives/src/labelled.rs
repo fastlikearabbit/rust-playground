@@ -3,6 +3,7 @@ use core::panic;
 
 use proc_macro::TokenStream;
 use quote::quote;
+use syn::{Lifetime, PatReference};
 
 pub fn impl_labelled(ast: syn::DeriveInput) -> TokenStream {
     let name = &ast.ident;
@@ -33,10 +34,20 @@ pub fn impl_labelled(ast: syn::DeriveInput) -> TokenStream {
     };
 
     let custom_field_items = input_fields.iter().map(|f| {
-            let name_as_iter = f.ident.clone().into_iter();
+            let name_as_iter = f.ident.clone().into_iter().map(|c| 
+            if c == syn::Ident::new("_", c.span()) { 
+                syn::Ident::new("__", c.span())
+            } else { c } );
             let enum_based_name = quote! { #(#name_as_iter),* };
-
-            quote! { Field<#enum_based_name, #f.ty.clone()> }
+            let lifetime = match f.ty.clone() {
+                syn::Type::Reference(ref_type) => ref_type.lifetime,
+                _ => None
+            };
+            let struct_lifetime = match lifetime {
+                Some(lt) => quote! { #lt, },
+                None => quote! { }
+            };
+            quote! { Field<#struct_lifetime #enum_based_name, #f.ty.clone()> }
         }
     );
 
@@ -48,7 +59,7 @@ pub fn impl_labelled(ast: syn::DeriveInput) -> TokenStream {
 
     let impl_block = quote! {
             impl #impl_generics ::mini_frunk_core::labelled::LabelledGeneric for #name #ty_generics #where_clause {
-                type Repr = HList![ #(#custom_field_items),* ];
+                type Repr = mini_frunk_core::HList![ #(#custom_field_items),* ];
 
                 fn into(self) -> Self::Repr {
                     // hlist![
