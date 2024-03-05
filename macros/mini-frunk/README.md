@@ -144,7 +144,7 @@ Let's find out how it works!
 7. Let's create a new trait called `LabelledGeneric`:
 
     ```rust
-    pub trait Generic {
+    pub trait LabelledGeneric {
         type Repr;
         fn into(self) -> Self::Repr;
         fn from(repr: Self::Repr) -> Self;
@@ -226,7 +226,7 @@ It's recommended to read tests to understand what's required.
 3. Implement the derive macro for the trait `LabelledGeneric`. Define and implement `from_labelled_generic`, `into_labelled_generic`, `labelled_convert_from` functions. Read tests in the file `generic.rs` with what structures your macro should work.
 4. Implement traits `Plucker`, `Sculptor`, and `Transmogrifier`.
 
-    When `HCons<Head, Tail>` implements `Plucker<Target, _>`, this means there's a type `Target` inside the list. Base of induction: `Head = Target`. Step: we `pluck` the `Target` from the `Tail` and then return the target and `Cons<Head, *Tail remainder*>`.
+    When `HCons<Head, Tail>` implements `Plucker<Target, _>`, this means there's a type `Target` inside the list. Base of induction: `Head = Target`. Step: we `pluck` the `Target` from the `Tail` and then return the target and `HCons<Head, *Tail remainder*>`.
 
     Why do we need `Indices`? Consider the situation when both `Target = Head` and `Tail: Plucker<Target>`. The compiler won't know what implementation to choose!
 
