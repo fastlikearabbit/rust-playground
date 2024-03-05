@@ -57,7 +57,7 @@ macro_rules! hlist {
         }
     };
 
-    ($front: expr, $($rest:expr),+) => {
+    ($front: expr, $($rest:expr),+ $(,)?) => {
         $crate::hlist::HCons { 
             head: $front,
             tail: $crate::hlist!($($rest),+) 
@@ -78,7 +78,7 @@ macro_rules! hlist_pat {
         }
     };
 
-    ($front: ident, $($rest:ident),+) => {
+    ($front: ident, $($rest:ident),+ $(,)?) => {
         $crate::hlist::HCons {
             head: $front, 
             tail: $crate::hlist_pat!($($rest),+)
