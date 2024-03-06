@@ -44,8 +44,8 @@ pub trait Sculptor<Target, Indices> {
     fn sculpt(self) -> (Target, Self::Remainder);
 }
 
-impl<Head, Tail> Sculptor<HNil, HNil> for HCons<Head, Tail> {
-    type Remainder = HCons<Head, Tail>;
+impl<Something> Sculptor<HNil, HNil> for Something {
+    type Remainder = Something;
 
     fn sculpt(self) -> (HNil, Self::Remainder) {
         (HNil, self)

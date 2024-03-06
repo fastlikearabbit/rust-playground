@@ -19,18 +19,18 @@ fn sculpt_basic() {
     assert_eq!(remainder, hlist![true]);
 }
 
-// #[test]
-// fn aligned_labelled_transmogrify_from() {
-//     let person = Person {
-//         first_name: "Moe",
-//         last_name: "Ali",
-//         age: 30,
-//     };
-//     let jumbled_person: JumbledPerson = transmogrify_from(person);
-//     assert_eq!(jumbled_person.first_name, "Moe");
-//     assert_eq!(jumbled_person.last_name, "Ali");
-//     assert_eq!(jumbled_person.age, 30);
-// }
+#[test]
+fn aligned_labelled_transmogrify_from() {
+    let person = Person {
+        first_name: "Moe",
+        last_name: "Ali",
+        age: 30,
+    };
+    let jumbled_person: JumbledPerson = transmogrify_from(person);
+    assert_eq!(jumbled_person.first_name, "Moe");
+    assert_eq!(jumbled_person.last_name, "Ali");
+    assert_eq!(jumbled_person.age, 30);
+}
 
 #[test]
 fn non_aligned_transmogrify_from() {
@@ -45,18 +45,18 @@ fn non_aligned_transmogrify_from() {
     assert_eq!(short_person.last_name, "Ali");
 }
 
-// #[test]
-// fn aligned_labelled_transmogrify() {
-//     let person = Person {
-//         first_name: "Moe",
-//         last_name: "Ali",
-//         age: 30,
-//     };
-//     let jumbled_person: JumbledPerson = person.transmogrify();
-//     assert_eq!(jumbled_person.first_name, "Moe");
-//     assert_eq!(jumbled_person.last_name, "Ali");
-//     assert_eq!(jumbled_person.age, 30);
-// }
+#[test]
+fn aligned_labelled_transmogrify() {
+    let person = Person {
+        first_name: "Moe",
+        last_name: "Ali",
+        age: 30,
+    };
+    let jumbled_person: JumbledPerson = person.transmogrify();
+    assert_eq!(jumbled_person.first_name, "Moe");
+    assert_eq!(jumbled_person.last_name, "Ali");
+    assert_eq!(jumbled_person.age, 30);
+}
 
 #[test]
 fn non_aligned_transmogrify() {
