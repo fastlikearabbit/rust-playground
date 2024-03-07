@@ -1,10 +1,9 @@
 #![forbid(unsafe_code)]
 use std::rc::Rc;
 
-#[derive(Debug)]
 pub struct PRef<T> {
     data: Rc<T>,
-    prev: Option<Box<PRef<T>>>,
+    prev: Option<Rc<PRef<T>>>,
 }
 
 impl<T> std::ops::Deref for PRef<T> {
@@ -18,16 +17,23 @@ impl<T> std::ops::Deref for PRef<T> {
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct PStack<T> {
-    top : Option<Box<PRef<T>>>,
+    top: Option<Rc<PRef<T>>>,
     size: usize,
 }
 
 impl<T> Default for PStack<T> {
     fn default() -> Self {
         Self {
-            top : None,
+            top: None,
             size: 0,
         }
+    }
+}
+
+impl<T> Clone for PStack<T> {
+    fn clone(&self) -> Self {
+        // TODO: your code goes here.
+        unimplemented!()
     }
 }
 
@@ -35,46 +41,39 @@ impl<T> Iterator for PStack<T> {
     type Item = PRef<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-      todo!();
-    } 
-}
-
-
-impl<T> Clone for PStack<T> {
-    fn clone(&self) -> Self {
-      todo!();
+        //self.top.map(|node| )
+        todo!()
     }
 }
 
 impl<T> PStack<T> {
     pub fn new() -> Self {
-        Default::default()
+        Self::default()
     }
 
     pub fn push(&self, value: T) -> Self {
-       let new_element = PRef {
-            data: Rc::new(value),
-            prev: self.clone().top,
-        };
-        
         Self {
-            top: Some(Box::new(new_element)),
+            top: Some(Rc::new(
+                PRef {
+                    data: Rc::new(value),
+                    prev: self.top.clone(),
+                }
+            )),
             size: self.size + 1,
         }
-
     }
 
     pub fn pop(&self) -> Option<(PRef<T>, Self)> {
-        let cloned = self.clone();
-        match cloned.top {
-            Some(top) => {
-                Some((*top, Self {
-                    top: self.top.unwrap().prev,
-                    size: self.size - 1,
-                }))
+        self.top.as_ref().map(|head| 
+            (PRef {
+                data: &head.data, 
+                prev: None,
             },
-            None => None,
-        }
+            Self { 
+                top: head.prev.clone(), 
+                size: self.size.saturating_sub(1)
+            })
+        )
     }
 
     pub fn len(&self) -> usize {
