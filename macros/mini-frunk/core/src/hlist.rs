@@ -39,7 +39,7 @@ macro_rules! HList {
         $crate::hlist::HCons<$t, $crate::hlist::HNil>
     };
 
-    ($front: ty, $($rest:ty),+) => {
+    ($front: ty, $($rest:ty),+ $(,)?) => {
         $crate::hlist::HCons<$front, $crate::HList![ $($rest),+ ]>
     };
 }

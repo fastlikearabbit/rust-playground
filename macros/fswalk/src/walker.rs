@@ -22,7 +22,7 @@ impl<'a> Walker<'a> {
         unimplemented!()
     }
 
-    pub fn walk<P: AsRef<Path>>(mut self, path: P) -> io::Result<()> {
+    pub fn walk<P: AsRef<std::path::Path>>(mut self, path: P) -> std::io::Result<()> {
         // TODO: your code goes here.
         unimplemented!()
     }

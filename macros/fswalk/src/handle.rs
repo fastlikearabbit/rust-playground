@@ -1,4 +1,5 @@
 #![forbid(unsafe_code)]
+use std::path::Path;
 
 pub enum Handle<'a> {
     Dir(DirHandle<'a>),

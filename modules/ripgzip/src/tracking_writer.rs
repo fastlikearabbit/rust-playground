@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 use std::collections::VecDeque;
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 
 use anyhow::{anyhow, ensure, Result};
 use crc::{Crc, Digest};
@@ -12,18 +12,17 @@ const HISTORY_SIZE: usize = 32768;
 
 pub struct TrackingWriter<T> {
     inner: T,
-    // TODO: your code goes here.
+    buffer: VecDeque<T>,
+    written_bytes: u32,
 }
 
 impl<T: Write> Write for TrackingWriter<T> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.inner.write(buf)
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.inner.flush()
     }
 }
 
@@ -45,8 +44,8 @@ impl<T: Write> TrackingWriter<T> {
     }
 
     pub fn crc32(mut self) -> u32 {
-        // TODO: your code goes here.
-        unimplemented!()
+       // crc::Crc::<u32>::new(&crc::CRC_32_ISO_HDLC).checksum(self.buffer.into())
+       todo!()
     }
 }
 

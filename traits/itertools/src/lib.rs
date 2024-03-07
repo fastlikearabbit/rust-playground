@@ -5,13 +5,14 @@ where
     I: Iterator,
 {
     iter: I,
+    origin: usize,
 }
 
 impl<I: Iterator> Iterator for LazyCycle<I> {
     type Item = <I as Iterator>::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        todo!()
+        self.fuse().into_iter().next()
     }
 }
 
