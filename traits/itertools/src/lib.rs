@@ -60,6 +60,7 @@ struct Cache<I: Iterator> {
     iter: I,
     cache: VecDeque<I::Item>,
     id: usize,
+    is_iter_over: bool,
 }
 
 pub struct Tee<I>
@@ -86,13 +87,17 @@ where
                 None => { },
             }
         }
+        if buffer.is_iter_over { return None; }
         match buffer.iter.next() {
             Some(e) => {
                 buffer.cache.push_back(e.clone());
                 buffer.id = if self.id == 1 { 2 } else { 1 };
                 Some(e)
             },
-            None => None,
+            None => {
+                buffer.is_iter_over = true;
+                None
+            },
         }
     }
 }
@@ -170,11 +175,11 @@ pub trait ExtendedIterator: Iterator {
         Self: Sized,
         Self::Item: Clone,
     {
-        // Bug: iter cannot be shared due to TrackedIter from tests ??????????
         let cache = Cache {
             iter: self,
             cache: VecDeque::new(),
             id: 0,
+            is_iter_over: false,
         };
 
         let first = Tee {
