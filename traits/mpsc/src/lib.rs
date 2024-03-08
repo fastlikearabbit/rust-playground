@@ -1,21 +1,20 @@
 #![forbid(unsafe_code)]
 
-use std::{borrow::Borrow, cell::RefCell, collections::VecDeque, fmt::Debug, rc::Rc};
+use std::{borrow::Borrow, cell::{Cell, RefCell}, collections::VecDeque, fmt::Debug, rc::Rc};
 use thiserror::Error;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pub struct TaskQueue<T> {
+pub struct Channel<T> {
     queue: Rc<RefCell<VecDeque<T>>>,
-    producers: usize,
+    producers: Cell<usize>,
 }
 
-impl<T> TaskQueue<T> {
+impl<T> Channel<T> {
     pub fn new() -> Self {
-        // TODO: set producers to something different
         Self {
             queue: Rc::new(RefCell::new(VecDeque::new())),
-            producers: 0,
+            producers: Cell::new(0),
         }
     }
 
@@ -24,7 +23,7 @@ impl<T> TaskQueue<T> {
     }
 
     pub fn is_closed(&self) -> bool {
-        self.producers == 0
+        self.producers.get() == 0
     }
 
     pub fn put(&mut self, value: T) {
@@ -36,8 +35,8 @@ impl<T> TaskQueue<T> {
         self.queue.borrow_mut().pop_front().unwrap_or_else(|| panic!("get() called on empty queue"))
     }
 
-    pub fn add_producer(&mut self) {
-        self.producers += 1;
+    pub fn add_producer(&self) {
+        self.producers.set(self.producers.get() + 1);
     }
 }
 
@@ -50,7 +49,7 @@ pub struct SendError<T> {
 }
 
 pub struct Sender<T> {
-    task_queue: TaskQueue<T>,
+    task_queue: Channel<T>,
     channel_id: usize,
 }
 
@@ -94,7 +93,7 @@ pub enum ReceiveError {
 }
 
 pub struct Receiver<T> {
-    task_queue: TaskQueue<T>,
+    task_queue: Channel<T>,
 }
 
 impl<T> Receiver<T> {
