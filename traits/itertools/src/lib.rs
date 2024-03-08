@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 
-use std::{cell::RefCell, collections::VecDeque, num::NonZeroUsize, rc::Rc};
+use std::{cell::RefCell, collections::VecDeque, rc::Rc};
 
 pub struct LazyCycle<I>
 where
