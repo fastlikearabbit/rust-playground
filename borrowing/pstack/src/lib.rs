@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 use std::rc::Rc;
 
+#[derive(Debug)]
 pub struct PRef<T> {
     data: Rc<T>,
     prev: Option<Rc<PRef<T>>>,
@@ -16,6 +17,7 @@ impl<T> std::ops::Deref for PRef<T> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#[derive(Debug)]
 pub struct PStack<T> {
     top: Option<Rc<PRef<T>>>,
     size: usize,
@@ -32,8 +34,10 @@ impl<T> Default for PStack<T> {
 
 impl<T> Clone for PStack<T> {
     fn clone(&self) -> Self {
-        // TODO: your code goes here.
-        unimplemented!()
+        Self {
+            top: self.top.clone(),
+            size: self.size,
+        }
     }
 }
 
@@ -41,8 +45,15 @@ impl<T> Iterator for PStack<T> {
     type Item = PRef<T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        //self.top.map(|node| )
-        todo!()
+        let head = self.top.as_mut()?;
+        let to_return = PRef {
+            data: head.data.clone(),
+            prev: None,
+        };
+        self.top = head.prev.clone();
+        self.size -= 1;
+       
+        Some(to_return)
     }
 }
 
@@ -66,7 +77,7 @@ impl<T> PStack<T> {
     pub fn pop(&self) -> Option<(PRef<T>, Self)> {
         self.top.as_ref().map(|head| 
             (PRef {
-                data: &head.data, 
+                data: head.data.clone(), 
                 prev: None,
             },
             Self { 
