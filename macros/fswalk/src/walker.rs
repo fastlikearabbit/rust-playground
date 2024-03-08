@@ -18,8 +18,7 @@ impl<'a> Walker<'a> {
     where
         F: FnMut(&mut Handle) + 'a,
     {
-        // TODO: your code goes here.
-        unimplemented!()
+        self.callbacks.push(Box::new(callback));
     }
 
     pub fn walk<P: AsRef<std::path::Path>>(mut self, path: P) -> std::io::Result<()> {

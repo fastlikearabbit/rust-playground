@@ -12,6 +12,7 @@ pub enum Handle<'a> {
 
 pub struct DirHandle<'a> {
     // TODO: your code goes here.
+    _marker: std::marker::PhantomData<&'a ()>,
 }
 
 impl<'a> DirHandle<'a> {
@@ -28,6 +29,7 @@ impl<'a> DirHandle<'a> {
 
 pub struct FileHandle<'a> {
     // TODO: your code goes here.
+    _marker: std::marker::PhantomData<&'a ()>,
 }
 
 impl<'a> FileHandle<'a> {
