@@ -41,14 +41,14 @@ where
 ////////////////////////////////////////////////////////////////////////////////
 
 pub struct Extract<I: Iterator> {
-    iter: I,
+    iter: std::iter::Chain<std::vec::IntoIter<<I as Iterator>::Item>, I>,
 }
 
 impl<I: Iterator> Iterator for Extract<I> {
     type Item = I::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        todo!()
+        self.iter.next()
     }
 }
 
@@ -107,8 +107,6 @@ pub trait ExtendedIterator: Iterator {
         Self: Sized,
         Self::Item: Clone,
     {
-        // TODO: your code goes here.
-        // use .by_ref() to take the iterator by &mut  
         LazyCycle {
             iter: self,
             saved: Vec::new(),
@@ -120,8 +118,18 @@ pub trait ExtendedIterator: Iterator {
     where
         Self: Sized,
     {
-        // TODO: your code goes here.
-        unimplemented!()
+        let mut index = index;
+        let mut front = Vec::new();
+        while index > 0 {
+            if let Some(e) = self.next() {
+                front.push(e);
+            }
+            index -= 1;
+        }
+
+        let result = self.next().take();
+        let new_iter = front.into_iter().chain(self);
+        (result, Extract { iter: new_iter })
     }
 
     fn tee(self) -> (Tee<Self>, Tee<Self>)
