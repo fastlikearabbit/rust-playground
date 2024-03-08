@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
 
+use std::{cell::RefCell, collections::VecDeque, num::NonZeroUsize, rc::Rc};
+
 pub struct LazyCycle<I>
 where
     I: Iterator,
@@ -54,12 +56,19 @@ impl<I: Iterator> Iterator for Extract<I> {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct Cache<I: Iterator> {
+    iter: I,
+    cache: VecDeque<I::Item>,
+    id: usize,
+}
+
 pub struct Tee<I>
 where
     I: Iterator,
     I::Item: Clone,
 {
-    iter: I,
+    buffer: Rc<RefCell<Cache<I>>>,
+    id: usize,
 }
 
 impl<I> Iterator for Tee<I>
@@ -70,7 +79,21 @@ where
     type Item = I::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next()
+        let mut buffer = self.buffer.borrow_mut();
+        if buffer.id == self.id {
+            match buffer.cache.pop_front() {
+                Some(e) => return Some(e),
+                None => { },
+            }
+        }
+        match buffer.iter.next() {
+            Some(e) => {
+                buffer.cache.push_back(e.clone());
+                buffer.id = if self.id == 1 { 2 } else { 1 };
+                Some(e)
+            },
+            None => None,
+        }
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,8 +170,25 @@ pub trait ExtendedIterator: Iterator {
         Self: Sized,
         Self::Item: Clone,
     {
-        // TODO: your code goes here.
-        unimplemented!()
+        // Bug: iter cannot be shared due to TrackedIter from tests ??????????
+        let cache = Cache {
+            iter: self,
+            cache: VecDeque::new(),
+            id: 0,
+        };
+
+        let first = Tee {
+            buffer: Rc::new(RefCell::new(cache)),
+            id: 1,
+        };
+        
+        let second = Tee {
+            buffer: first.buffer.clone(),
+            id: 2,
+        };
+        
+        (first, second)
+        
     }
 
     fn group_by<F, V>(self, func: F) -> GroupBy<Self, F, V>
