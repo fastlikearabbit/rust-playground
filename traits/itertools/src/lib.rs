@@ -5,14 +5,36 @@ where
     I: Iterator,
 {
     iter: I,
-    origin: usize,
+    saved: Vec<I::Item>,
+    saved_index: usize,
 }
 
-impl<I: Iterator> Iterator for LazyCycle<I> {
-    type Item = <I as Iterator>::Item;
+impl<I> Iterator for LazyCycle<I>
+where
+    I: Iterator,
+    I::Item: Clone,
+{
+    type Item = I::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.fuse().into_iter().next()
+        if self.saved_index < self.saved.len() {
+            let item = self.saved[self.saved_index].clone();
+            self.saved_index = (self.saved_index + 1) % self.saved.len();
+            Some(item)
+        } else {
+            match self.iter.next() {
+                Some(item) => {
+                    self.saved.push(item.clone());
+                    self.saved_index += 1; 
+                    Some(item)
+                }
+                None if !self.saved.is_empty() => {
+                    self.saved_index = 0;
+                    self.next()
+                }
+                _ => None,
+            }
+        }
     }
 }
 
@@ -23,7 +45,7 @@ pub struct Extract<I: Iterator> {
 }
 
 impl<I: Iterator> Iterator for Extract<I> {
-    type Item = <I as Iterator>::Item;
+    type Item = I::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
         todo!()
@@ -45,7 +67,7 @@ where
     I: Iterator,
     I::Item: Clone,
 {
-    type Item = <I as Iterator>::Item;
+    type Item = I::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
         todo!()
@@ -87,7 +109,11 @@ pub trait ExtendedIterator: Iterator {
     {
         // TODO: your code goes here.
         // use .by_ref() to take the iterator by &mut  
-        unimplemented!()
+        LazyCycle {
+            iter: self,
+            saved: Vec::new(),
+            saved_index: 0,
+        }
     }
 
     fn extract(mut self, index: usize) -> (Option<Self::Item>, Extract<Self>)
