@@ -70,7 +70,7 @@ where
     type Item = I::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        todo!()
+        self.iter.next()
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,9 +81,8 @@ where
     F: FnMut(&I::Item) -> V,
     V: Eq,
 {
-    iter: I,
+    iter: std::iter::Peekable<I>,
     f: F,
-    value: V,
 }
 
 impl<I, F, V> Iterator for GroupBy<I, F, V>
@@ -95,7 +94,18 @@ where
     type Item = (V, std::vec::IntoIter<I::Item>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        todo!()
+        let key = self.iter.next()?;
+        let v = (self.f)(&key);
+        let mut values = Vec::new();
+        values.push(key);
+        while let Some(e) = self.iter.peek() {
+            if (self.f)(e) == v {
+                values.push(self.iter.next().unwrap())
+            } else {
+                break;
+            }
+        }
+        Some((v, values.into_iter()))
     }
 }
 
@@ -147,8 +157,10 @@ pub trait ExtendedIterator: Iterator {
         F: FnMut(&Self::Item) -> V,
         V: Eq,
     {
-        // TODO: your code goes here.
-        unimplemented!()
+        GroupBy {
+            iter: self.peekable(),
+            f: func,
+        }
     }
 }
 
